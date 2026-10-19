@@ -9,6 +9,7 @@ import {
     Globe,
     HelpCircle,
     Image,
+    Info,
     Layers,
     MapPin,
     Monitor,
@@ -565,10 +566,15 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                 {/* Featured Image */}
                                 <Card>
                                     <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                                        <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-                                            <Image className="h-4 w-4" />
-                                            Featured Image
-                                        </CardTitle>
+                                        <div>
+                                            <CardTitle className="text-sm font-medium flex items-center gap-1.5">
+                                                <Image className="h-4 w-4 text-[#C2410C]" />
+                                                Featured Image
+                                            </CardTitle>
+                                            <CardDescription className="text-[11px] mt-0.5">
+                                                Rasio 16:9 • Rekomendasi 1200×675 px (atau 1920×1080 px)
+                                            </CardDescription>
+                                        </div>
                                         <Button
                                             type="button"
                                             variant="ghost"
@@ -624,6 +630,11 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                 <span className="font-semibold text-foreground text-xs">
                                                     No featured banner set
                                                 </span>
+                                                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 font-mono text-[10px]">
+                                                    <span>16:9</span>
+                                                    <span>•</span>
+                                                    <span>1200 × 675 px (Ideal)</span>
+                                                </div>
                                                 <Button
                                                     type="button"
                                                     size="sm"
@@ -642,6 +653,32 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* Resolution & Asset Guide Box */}
+                                        <div className="rounded-lg border border-border/60 bg-muted/30 p-2.5 text-[11px] text-muted-foreground space-y-1.5">
+                                            <div className="font-medium text-foreground flex items-center gap-1.5">
+                                                <Info className="h-3.5 w-3.5 text-[#C2410C] shrink-0" />
+                                                <span>Panduan Resolusi &amp; Format Gambar:</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-1.5 font-mono text-[10.5px] pt-0.5">
+                                                <div className="p-1.5 rounded bg-background/60 border border-border/40">
+                                                    <span className="text-muted-foreground block text-[9.5px] uppercase">Rasio Aspek</span>
+                                                    <span className="font-bold text-foreground">16:9 (Landscape)</span>
+                                                </div>
+                                                <div className="p-1.5 rounded bg-background/60 border border-border/40">
+                                                    <span className="text-muted-foreground block text-[9.5px] uppercase">Resolusi Standar</span>
+                                                    <span className="font-bold text-foreground">1200 × 675 px</span>
+                                                </div>
+                                                <div className="p-1.5 rounded bg-background/60 border border-border/40">
+                                                    <span className="text-muted-foreground block text-[9.5px] uppercase">Resolusi Retina HD</span>
+                                                    <span className="font-bold text-foreground">1920 × 1080 px</span>
+                                                </div>
+                                                <div className="p-1.5 rounded bg-background/60 border border-border/40">
+                                                    <span className="text-muted-foreground block text-[9.5px] uppercase">Ukuran Maksimal</span>
+                                                    <span className="font-bold text-foreground">≤ 2 MB (WebP/JPG)</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </CardContent>
                                 </Card>
 

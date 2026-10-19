@@ -536,6 +536,9 @@ export default function MediaLibraryModal({
                                 <p className="text-xs text-muted-foreground">
                                     Supports JPEG, PNG, WebP, AVIF, and GIF up to 12 MB
                                 </p>
+                                <p className="text-[11px] font-mono text-amber-600 dark:text-amber-400">
+                                    Resolusi Banner Rekomendasi: 1200 × 675 px (16:9) atau 1920 × 1080 px
+                                </p>
                             </div>
 
                             <input
