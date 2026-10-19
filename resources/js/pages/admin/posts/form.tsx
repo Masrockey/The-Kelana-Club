@@ -133,6 +133,21 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
     const [previewContent, setPreviewContent] = useState(false);
     const [featuredMediaModalOpen, setFeaturedMediaModalOpen] = useState(false);
 
+    const [isSlugCustomized, setIsSlugCustomized] = useState(isEdit && !!post?.slug);
+
+    function slugify(text: string): string {
+        return text
+            .toString()
+            .toLowerCase()
+            .trim()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/[\s_]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    }
+
     function handleFeaturedMediaSelect(media: { url: string; alt_text?: string; caption?: string; name?: string }) {
         setData((prev) => ({
             ...prev,
@@ -141,14 +156,26 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
         }));
     }
 
-    // Auto-generate slug when title changes (if new post or slug empty)
+    // Auto-generate slug when title changes (unless manually edited by user)
     function handleTitleChange(val: string) {
-        setData((prev) => ({
-            ...prev,
-            title: val,
-            slug: !isEdit && !prev.slug ? val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : prev.slug,
-            meta_title: !prev.meta_title ? val : prev.meta_title,
-        }));
+        setData((prev) => {
+            const shouldUpdateSlug = !isSlugCustomized || !prev.slug;
+            const newSlug = shouldUpdateSlug ? slugify(val) : prev.slug;
+            const shouldUpdateMetaTitle = !prev.meta_title || prev.meta_title === prev.title;
+            const newMetaTitle = shouldUpdateMetaTitle ? val : prev.meta_title;
+
+            return {
+                ...prev,
+                title: val,
+                slug: newSlug,
+                meta_title: newMetaTitle,
+            };
+        });
+    }
+
+    function handleSlugChange(val: string) {
+        setIsSlugCustomized(true);
+        setData('slug', slugify(val));
     }
 
     // Client-side instant SEO Analysis evaluation
@@ -372,14 +399,30 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="slug" className="text-xs text-muted-foreground flex items-center justify-between">
-                                                <span>Permalink URL Slug</span>
-                                                <span className="font-mono text-[11px]">/article/{data.slug || 'your-slug'}</span>
-                                            </Label>
+                                            <div className="flex items-center justify-between">
+                                                <Label htmlFor="slug" className="text-xs text-muted-foreground flex items-center gap-2">
+                                                    <span>Permalink URL Slug</span>
+                                                    {isSlugCustomized && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setIsSlugCustomized(false);
+                                                                setData('slug', slugify(data.title));
+                                                            }}
+                                                            className="text-[10px] text-[#C2410C] hover:underline font-normal"
+                                                        >
+                                                            (Reset to match title)
+                                                        </button>
+                                                    )}
+                                                </Label>
+                                                <span className="font-mono text-[11px] text-muted-foreground">
+                                                    /article/{data.slug || 'your-slug'}
+                                                </span>
+                                            </div>
                                             <Input
                                                 id="slug"
                                                 value={data.slug}
-                                                onChange={(e) => setData('slug', e.target.value)}
+                                                onChange={(e) => handleSlugChange(e.target.value)}
                                                 placeholder="article-url-slug"
                                                 className="font-mono text-xs"
                                             />

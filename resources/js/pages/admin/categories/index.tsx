@@ -33,6 +33,20 @@ export default function CategoriesIndex({ categories }: Props) {
     const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<CategoryItem | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [isSlugCustomized, setIsSlugCustomized] = useState(false);
+
+    function slugify(text: string): string {
+        return text
+            .toString()
+            .toLowerCase()
+            .trim()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/[\s_]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    }
 
     const { data, setData, post, put, delete: destroy, reset, processing, errors } = useForm({
         name: '',
@@ -41,24 +55,37 @@ export default function CategoriesIndex({ categories }: Props) {
         color: '#C2410C',
     });
 
+    function handleNameChange(val: string) {
+        setData((prev) => ({
+            ...prev,
+            name: val,
+            slug: !isSlugCustomized || !prev.slug ? slugify(val) : prev.slug,
+        }));
+    }
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (editingCategory) {
             put(`/admin/categories/${editingCategory.id}`, {
                 onSuccess: () => {
                     setEditingCategory(null);
+                    setIsSlugCustomized(false);
                     reset();
                 },
             });
         } else {
             post('/admin/categories', {
-                onSuccess: () => reset(),
+                onSuccess: () => {
+                    setIsSlugCustomized(false);
+                    reset();
+                },
             });
         }
     }
 
     function startEdit(cat: CategoryItem) {
         setEditingCategory(cat);
+        setIsSlugCustomized(true);
         setData({
             name: cat.name,
             slug: cat.slug,
@@ -69,6 +96,7 @@ export default function CategoriesIndex({ categories }: Props) {
 
     function cancelEdit() {
         setEditingCategory(null);
+        setIsSlugCustomized(false);
         reset();
     }
 
@@ -123,7 +151,7 @@ export default function CategoriesIndex({ categories }: Props) {
                                     <Input
                                         id="cat_name"
                                         value={data.name}
-                                        onChange={(e) => setData('name', e.target.value)}
+                                        onChange={(e) => handleNameChange(e.target.value)}
                                         placeholder="e.g. Urban Philosophy"
                                         required
                                     />
@@ -131,11 +159,28 @@ export default function CategoriesIndex({ categories }: Props) {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="cat_slug" className="text-xs">Slug (Optional)</Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="cat_slug" className="text-xs">Slug</Label>
+                                        {isSlugCustomized && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsSlugCustomized(false);
+                                                    setData('slug', slugify(data.name));
+                                                }}
+                                                className="text-[10px] text-[#C2410C] hover:underline"
+                                            >
+                                                Reset to match name
+                                            </button>
+                                        )}
+                                    </div>
                                     <Input
                                         id="cat_slug"
                                         value={data.slug}
-                                        onChange={(e) => setData('slug', e.target.value)}
+                                        onChange={(e) => {
+                                            setIsSlugCustomized(true);
+                                            setData('slug', slugify(e.target.value));
+                                        }}
                                         placeholder="urban-philosophy"
                                         className="font-mono text-xs"
                                     />
