@@ -24,10 +24,10 @@ class GeoService
         [
             'code' => 'ID',
             'name' => 'Indonesia',
-            'region' => 'ID-JK',
-            'city' => 'Jakarta',
-            'lat' => -6.2088,
-            'lng' => 106.8456,
+            'region' => 'ID-NB',
+            'city' => 'Lombok',
+            'lat' => -8.6500,
+            'lng' => 116.3249,
             'hreflang' => 'id-ID',
         ],
         [
@@ -128,14 +128,14 @@ class GeoService
 
         // 2. Check standard headers or test ip
         if ($ip === '127.0.0.1' || $ip === '::1' || str_starts_with((string) $ip, '192.168.') || str_starts_with((string) $ip, '10.')) {
-            // Local dev fallback: default to Indonesia (Jakarta)
+            // Local dev fallback: default to Indonesia (Lombok)
             return [
                 'country_code' => 'ID',
                 'country_name' => 'Indonesia',
-                'city' => 'Jakarta',
-                'region' => 'DKI Jakarta',
-                'latitude' => -6.2088,
-                'longitude' => 106.8456,
+                'city' => 'Lombok',
+                'region' => 'Nusa Tenggara Barat',
+                'latitude' => -8.6500,
+                'longitude' => 116.3249,
             ];
         }
 
@@ -143,10 +143,10 @@ class GeoService
         return [
             'country_code' => 'ID',
             'country_name' => 'Indonesia',
-            'city' => 'Jakarta',
-            'region' => 'DKI Jakarta',
-            'latitude' => -6.2088,
-            'longitude' => 106.8456,
+            'city' => 'Lombok',
+            'region' => 'Nusa Tenggara Barat',
+            'latitude' => -8.6500,
+            'longitude' => 116.3249,
         ];
     }
 

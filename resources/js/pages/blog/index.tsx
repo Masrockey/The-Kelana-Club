@@ -230,12 +230,10 @@ export default function BlogIndex({
                     <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <span>Independent Field Notes &amp; Travel Journal by Kelana Club • Real Routes by Real Travelers</span>
-                            {visitorGeo?.city && (
-                                <span className="inline-flex items-center gap-1 text-[#7d1017] dark:text-[#ffb3ae] font-medium ml-2">
-                                    <MapPin className="size-3" />
-                                    <span>{visitorGeo.city}, {visitorGeo.country_name || 'ID'}</span>
-                                </span>
-                            )}
+                            <span className="inline-flex items-center gap-1 text-[#7d1017] dark:text-[#ffb3ae] font-medium ml-2">
+                                <MapPin className="size-3" />
+                                <span>Lombok, Indonesia</span>
+                            </span>
                         </div>
                         <div className="flex items-center gap-4">
                             <span>Follow Us:</span>

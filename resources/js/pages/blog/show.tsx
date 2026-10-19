@@ -268,7 +268,7 @@ export default function BlogShow({
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#E7E5E4] dark:border-[#262422] bg-[#FAF7F2] dark:bg-[#181716] text-[11px] font-mono text-[#B45309] dark:text-[#F59E0B]">
                         <MapPin className="h-3 w-3" />
                         <span>
-                            Dispatched from {post.geo_placename || 'Jakarta'}, {post.geo_target_country}
+                            Dispatched from {post.geo_placename || 'Lombok'}, {post.geo_target_country}
                             {post.geo_latitude && ` • [${post.geo_latitude.toFixed(2)}°, ${post.geo_longitude?.toFixed(2)}°]`}
                         </span>
                     </div>
