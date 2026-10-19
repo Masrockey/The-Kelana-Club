@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { renderInlineMarkdown } from '@/lib/markdown';
 
 interface CommentItem {
     id: number;
@@ -290,7 +291,7 @@ export default function BlogShow({
                 {/* Subtitle / Excerpt */}
                 {post.excerpt && (
                     <p className="font-serif italic text-lg sm:text-xl text-[#57534E] dark:text-[#A8A29E] leading-relaxed border-l-2 border-[#C2410C] pl-4">
-                        {post.excerpt}
+                        {renderInlineMarkdown(post.excerpt)}
                     </p>
                 )}
 
@@ -352,7 +353,7 @@ export default function BlogShow({
                             <span className="uppercase tracking-wider font-mono text-[11px]">Field Intelligence</span>
                         </div>
                         <p className="font-serif italic text-sm leading-relaxed text-[#58413f] dark:text-[#d6c7b2]">
-                            {post.excerpt}
+                            {renderInlineMarkdown(post.excerpt)}
                         </p>
                     </div>
                 )}
@@ -446,7 +447,7 @@ export default function BlogShow({
                                                 Key Waypoints & Field Stops:
                                             </span>
                                             <p className="font-serif italic text-sm text-[#44403C] dark:text-[#D6D3D1]">
-                                                {routeData.highlights}
+                                                {renderInlineMarkdown(routeData.highlights)}
                                             </p>
                                         </div>
                                     )}
@@ -487,7 +488,7 @@ export default function BlogShow({
                                         )}
                                         <span>{title}</span>
                                     </div>
-                                    <p className="font-serif text-sm leading-relaxed">{body}</p>
+                                    <p className="font-serif text-sm leading-relaxed">{renderInlineMarkdown(body)}</p>
                                 </div>
                             );
                         }
@@ -533,7 +534,7 @@ export default function BlogShow({
                                     key={idx}
                                     className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1917] dark:text-white pt-8 pb-2"
                                 >
-                                    {trimmed.replace(/^##\s+/, '')}
+                                    {renderInlineMarkdown(trimmed.replace(/^##\s+/, ''))}
                                 </h2>
                             );
                         }
@@ -543,7 +544,7 @@ export default function BlogShow({
                                     key={idx}
                                     className="font-serif text-xl sm:text-2xl font-semibold tracking-tight text-[#1C1917] dark:text-white pt-6 pb-1"
                                 >
-                                    {trimmed.replace(/^###\s+/, '')}
+                                    {renderInlineMarkdown(trimmed.replace(/^###\s+/, ''))}
                                 </h3>
                             );
                         }
@@ -553,7 +554,7 @@ export default function BlogShow({
                                     key={idx}
                                     className="font-serif text-lg sm:text-xl font-semibold tracking-tight text-[#1C1917] dark:text-white pt-4 pb-1"
                                 >
-                                    {trimmed.replace(/^####\s+/, '')}
+                                    {renderInlineMarkdown(trimmed.replace(/^####\s+/, ''))}
                                 </h4>
                             );
                         }
@@ -580,10 +581,10 @@ export default function BlogShow({
                                     key={idx}
                                     className="border-l-4 border-[#C2410C] pl-6 my-8 italic font-serif text-lg text-[#57534E] dark:text-[#A8A29E] bg-[#FAF7F2] dark:bg-[#181716] p-5 rounded-r-xl"
                                 >
-                                    <p className="leading-relaxed">&ldquo;{quoteBody.join(' ')}&rdquo;</p>
+                                    <p className="leading-relaxed">&ldquo;{renderInlineMarkdown(quoteBody.join(' '))}&rdquo;</p>
                                     {citation && (
                                         <cite className="block text-xs font-serif not-italic font-bold text-[#1C1917] dark:text-white mt-2">
-                                            — {citation}
+                                            — {renderInlineMarkdown(citation)}
                                         </cite>
                                     )}
                                 </blockquote>
@@ -596,7 +597,7 @@ export default function BlogShow({
                             return (
                                 <ul key={idx} className="my-6 space-y-2 pl-6 list-disc marker:text-[#C2410C] font-serif text-base">
                                     {lines.map((item, itemIdx) => (
-                                        <li key={itemIdx}>{item.replace(/^[-*+]\s+/, '')}</li>
+                                        <li key={itemIdx}>{renderInlineMarkdown(item.replace(/^[-*+]\s+/, ''))}</li>
                                     ))}
                                 </ul>
                             );
@@ -605,7 +606,7 @@ export default function BlogShow({
                             return (
                                 <ol key={idx} className="my-6 space-y-2 pl-6 list-decimal marker:font-mono marker:text-xs marker:text-[#C2410C] font-serif text-base">
                                     {lines.map((item, itemIdx) => (
-                                        <li key={itemIdx}>{item.replace(/^\d+\.\s+/, '')}</li>
+                                        <li key={itemIdx}>{renderInlineMarkdown(item.replace(/^\d+\.\s+/, ''))}</li>
                                     ))}
                                 </ol>
                             );
@@ -618,12 +619,12 @@ export default function BlogShow({
                                     key={idx}
                                     className="first-letter:font-serif first-letter:text-5xl first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:leading-none first-letter:text-[#C2410C]"
                                 >
-                                    {trimmed}
+                                    {renderInlineMarkdown(trimmed)}
                                 </p>
                             );
                         }
 
-                        return <p key={idx}>{trimmed}</p>;
+                        return <p key={idx}>{renderInlineMarkdown(trimmed)}</p>;
                     })}
                 </div>
 

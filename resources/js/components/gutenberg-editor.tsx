@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef, useId } from 'react';
 import {
     Plus,
     Type,
+    Bold,
+    Italic,
+    Link as LinkIcon,
     Heading2,
     Heading3,
     Heading4,
@@ -37,6 +40,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import MediaLibraryModal from '@/components/media-library-modal';
+import { renderInlineMarkdown } from '@/lib/markdown';
 
 export type BlockType =
     | 'paragraph'
@@ -431,6 +435,60 @@ export default function GutenbergEditor({
     function updateBlock(id: string, updates: Partial<GutenbergBlock>) {
         const updated = blocks.map((b) => (b.id === id ? { ...b, ...updates } : b));
         commitBlocks(updated);
+    }
+
+    // Apply inline markdown format (bold, italic, link, code) to active block
+    function applyInlineFormat(blockId: string, format: 'bold' | 'italic' | 'link' | 'code') {
+        const textarea = document.querySelector(`textarea[data-block-id="${blockId}"]`) as HTMLTextAreaElement | null;
+        const input = document.querySelector(`input[data-block-id="${blockId}"]`) as HTMLInputElement | null;
+        const el = textarea || input;
+
+        const block = blocks.find((b) => b.id === blockId);
+        if (!block) return;
+
+        if (!el) {
+            let addition = '';
+            if (format === 'bold') addition = ' **teks tebal** ';
+            if (format === 'italic') addition = ' *teks miring* ';
+            if (format === 'link') addition = ' [Teks Tautan](https://) ';
+            if (format === 'code') addition = ' `kode` ';
+            updateBlock(blockId, { content: (block.content || '') + addition });
+            return;
+        }
+
+        const start = el.selectionStart ?? 0;
+        const end = el.selectionEnd ?? 0;
+        const val = el.value || '';
+        const selected = val.substring(start, end);
+
+        let replacement = '';
+        let newCursorPos = start;
+
+        if (format === 'bold') {
+            replacement = selected ? `**${selected}**` : `**teks tebal**`;
+            newCursorPos = selected ? end + 4 : start + 14;
+        } else if (format === 'italic') {
+            replacement = selected ? `*${selected}*` : `*teks miring*`;
+            newCursorPos = selected ? end + 2 : start + 13;
+        } else if (format === 'link') {
+            const defaultUrl = 'https://';
+            const url = window.prompt('Masukkan URL / link tujuan:', defaultUrl);
+            if (url === null) return;
+            const cleanUrl = url.trim() || 'https://';
+            replacement = selected ? `[${selected}](${cleanUrl})` : `[Teks Tautan](${cleanUrl})`;
+            newCursorPos = start + replacement.length;
+        } else if (format === 'code') {
+            replacement = selected ? `\`${selected}\`` : `\`kode\``;
+            newCursorPos = selected ? end + 2 : start + 7;
+        }
+
+        const newVal = val.substring(0, start) + replacement + val.substring(end);
+        updateBlock(blockId, { content: newVal });
+
+        setTimeout(() => {
+            el.focus();
+            el.setSelectionRange(newCursorPos, newCursorPos);
+        }, 30);
     }
 
     // Add new block
@@ -935,6 +993,47 @@ export default function GutenbergEditor({
                                                     Quote
                                                 </button>
                                             </div>
+
+                                            {/* Text Formatting Toolbar: Bold (**), Italic (*), Link ([text](url)), Code (`) */}
+                                            {['paragraph', 'heading', 'quote', 'callout', 'list'].includes(block.type) && (
+                                                <div className="flex items-center gap-0.5 border rounded-md p-0.5 ml-1 bg-background shadow-xs">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => applyInlineFormat(block.id, 'bold')}
+                                                        className="px-1.5 py-0.5 rounded hover:bg-muted text-foreground transition-colors text-xs font-bold flex items-center gap-1"
+                                                        title="Bold (**teks**) — Ctrl+B"
+                                                    >
+                                                        <Bold className="h-3 w-3" />
+                                                        <span className="hidden sm:inline text-[10px]">Bold</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => applyInlineFormat(block.id, 'italic')}
+                                                        className="px-1.5 py-0.5 rounded hover:bg-muted text-foreground transition-colors text-xs italic flex items-center gap-1"
+                                                        title="Italic (*teks*) — Ctrl+I"
+                                                    >
+                                                        <Italic className="h-3 w-3" />
+                                                        <span className="hidden sm:inline text-[10px]">Italic</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => applyInlineFormat(block.id, 'link')}
+                                                        className="px-1.5 py-0.5 rounded hover:bg-muted text-[#C2410C] transition-colors text-xs flex items-center gap-1 font-medium"
+                                                        title="Insert Link ([teks](url)) — Ctrl+K"
+                                                    >
+                                                        <LinkIcon className="h-3 w-3" />
+                                                        <span className="hidden sm:inline text-[10px]">Link</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => applyInlineFormat(block.id, 'code')}
+                                                        className="px-1.5 py-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-xs font-mono"
+                                                        title="Inline Code (`kode`)"
+                                                    >
+                                                        <Code className="h-3 w-3" />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Block Navigation: Move Up, Move Down, Duplicate, Delete */}
@@ -991,6 +1090,7 @@ export default function GutenbergEditor({
                                     {block.type === 'paragraph' && (
                                         <div className="relative">
                                             <Textarea
+                                                data-block-id={block.id}
                                                 value={block.content || ''}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
@@ -1003,6 +1103,21 @@ export default function GutenbergEditor({
                                                     updateBlock(block.id, { content: val });
                                                 }}
                                                 onKeyDown={(e) => {
+                                                    if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+                                                        e.preventDefault();
+                                                        applyInlineFormat(block.id, 'bold');
+                                                        return;
+                                                    }
+                                                    if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) {
+                                                        e.preventDefault();
+                                                        applyInlineFormat(block.id, 'italic');
+                                                        return;
+                                                    }
+                                                    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                                                        e.preventDefault();
+                                                        applyInlineFormat(block.id, 'link');
+                                                        return;
+                                                    }
                                                     if (e.key === 'Enter' && !e.shiftKey) {
                                                         e.preventDefault();
                                                         insertBlock('paragraph', index + 1);
@@ -1012,6 +1127,18 @@ export default function GutenbergEditor({
                                                 rows={Math.max(2, (block.content || '').split('\n').length)}
                                                 className="w-full resize-none border-0 bg-transparent p-0 font-serif text-base leading-relaxed text-foreground focus-visible:ring-0 shadow-none placeholder:text-muted-foreground/50"
                                             />
+
+                                            {/* Live Formatted Markdown Preview Helper */}
+                                            {block.content && (block.content.includes('**') || block.content.includes('[') || block.content.includes('`')) && (
+                                                <div className="mt-1 pt-1.5 border-t border-dashed border-border/60 text-xs text-muted-foreground/80 flex items-center gap-1.5 font-sans">
+                                                    <span className="font-mono text-[9px] uppercase tracking-wider px-1 py-0.5 rounded bg-muted/60 text-muted-foreground font-semibold">
+                                                        Preview:
+                                                    </span>
+                                                    <span className="font-serif text-sm text-foreground">
+                                                        {renderInlineMarkdown(block.content)}
+                                                    </span>
+                                                </div>
+                                            )}
 
                                             {/* Quick Slash Menu Popover */}
                                             {slashMenuIndex === index && (
@@ -1068,9 +1195,20 @@ export default function GutenbergEditor({
                                     {block.type === 'heading' && (
                                         <div className="w-full">
                                             <Input
+                                                data-block-id={block.id}
                                                 value={block.content || ''}
                                                 onChange={(e) => updateBlock(block.id, { content: e.target.value })}
                                                 onKeyDown={(e) => {
+                                                    if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+                                                        e.preventDefault();
+                                                        applyInlineFormat(block.id, 'bold');
+                                                        return;
+                                                    }
+                                                    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                                                        e.preventDefault();
+                                                        applyInlineFormat(block.id, 'link');
+                                                        return;
+                                                    }
                                                     if (e.key === 'Enter') {
                                                         e.preventDefault();
                                                         insertBlock('paragraph', index + 1);
@@ -1187,8 +1325,21 @@ export default function GutenbergEditor({
                                     {block.type === 'quote' && (
                                         <div className="border-l-4 border-[#C2410C] pl-4 py-2 space-y-2 bg-muted/10 rounded-r-lg">
                                             <Textarea
+                                                data-block-id={block.id}
                                                 value={block.content || ''}
                                                 onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                                                onKeyDown={(e) => {
+                                                    if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+                                                        e.preventDefault();
+                                                        applyInlineFormat(block.id, 'bold');
+                                                        return;
+                                                    }
+                                                    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                                                        e.preventDefault();
+                                                        applyInlineFormat(block.id, 'link');
+                                                        return;
+                                                    }
+                                                }}
                                                 placeholder="Write pull-quote or authentic traveler reflection..."
                                                 rows={2}
                                                 className="w-full resize-none border-0 bg-transparent p-0 font-serif italic text-lg leading-relaxed focus-visible:ring-0 shadow-none text-foreground"
