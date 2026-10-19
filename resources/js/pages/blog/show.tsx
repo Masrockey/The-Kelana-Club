@@ -16,6 +16,7 @@ import {
     Rss,
     Send,
     Share2,
+    Sparkles,
     Twitter,
 } from 'lucide-react';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
@@ -78,6 +79,7 @@ interface Props {
     relatedPosts: any[];
     articleSchema: any;
     breadcrumbSchema: any;
+    geoAiSchema?: any;
     visitorGeo: any;
     hcaptchaSiteKey?: string;
 }
@@ -87,6 +89,7 @@ export default function BlogShow({
     relatedPosts,
     articleSchema,
     breadcrumbSchema,
+    geoAiSchema,
     visitorGeo,
     hcaptchaSiteKey,
 }: Props) {
@@ -196,6 +199,11 @@ export default function BlogShow({
                 <script type="application/ld+json">
                     {JSON.stringify(breadcrumbSchema)}
                 </script>
+                {geoAiSchema && (
+                    <script type="application/ld+json">
+                        {JSON.stringify(geoAiSchema)}
+                    </script>
+                )}
             </Head>
 
             {/* Reading Scroll Progress Sticky Bar */}
@@ -334,6 +342,19 @@ export default function BlogShow({
                             alt={post.title}
                             className="w-full h-full object-cover"
                         />
+                    </div>
+                )}
+
+                {/* Generative Engine Optimization (GEO) Key Direct Answer / Field Executive Summary */}
+                {post.excerpt && (
+                    <div className="geo-ai-summary ai-direct-answer rounded-xl border border-amber-600/20 bg-amber-500/5 p-4 sm:p-5 space-y-2.5">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-400">
+                            <Sparkles className="h-4 w-4" />
+                            <span className="uppercase tracking-wider font-mono text-[11px]">Field Intelligence &amp; Direct Takeaway (GEO)</span>
+                        </div>
+                        <p className="font-serif italic text-sm leading-relaxed text-[#58413f] dark:text-[#d6c7b2]">
+                            {post.excerpt}
+                        </p>
                     </div>
                 )}
 

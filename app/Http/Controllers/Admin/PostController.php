@@ -259,7 +259,7 @@ class PostController extends Controller
      */
     public function analyzeSeo(Request $request): JsonResponse
     {
-        $analysis = $this->seoService->analyze(
+        $seoAnalysis = $this->seoService->analyze(
             $request->input('title', ''),
             $request->input('content', ''),
             $request->input('focus_keyword', ''),
@@ -267,6 +267,17 @@ class PostController extends Controller
             $request->input('meta_description', '')
         );
 
-        return response()->json($analysis);
+        $geoAnalysis = $this->seoService->analyzeGeo(
+            $request->input('title', ''),
+            $request->input('content', ''),
+            $request->input('excerpt', ''),
+            $request->input('focus_keyword', '')
+        );
+
+        return response()->json([
+            'seo' => $seoAnalysis,
+            'geo' => $geoAnalysis,
+            ...$seoAnalysis,
+        ]);
     }
 }

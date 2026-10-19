@@ -166,12 +166,16 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * SEO Analytics & Bot Crawler Activity.
+     * SEO & GEO (Generative Engine Optimization) Analytics & Bot Crawler Activity.
      */
     public function seo(): Response
     {
         $totalBotCrawls = PageVisit::where('is_bot', true)->count();
         $totalPosts = Post::count();
+
+        // Recognized Generative AI Crawler bot names
+        $aiBotNames = ['GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'PerplexityBot', 'ClaudeBot', 'Google-Extended', 'Bytespider', 'Cohere-ai', 'CCBot'];
+        $totalAiCrawls = PageVisit::where('is_bot', true)->whereIn('bot_name', $aiBotNames)->count();
 
         // Bot crawls breakdown by engine
         $botBreakdown = PageVisit::where('is_bot', true)
@@ -179,7 +183,11 @@ class AnalyticsController extends Controller
             ->select('bot_name', DB::raw('count(*) as count'))
             ->groupBy('bot_name')
             ->orderByDesc('count')
-            ->get();
+            ->get()
+            ->map(function ($bot) use ($aiBotNames) {
+                $bot->is_ai = in_array($bot->bot_name, $aiBotNames);
+                return $bot;
+            });
 
         // 30-day bot crawl timeline
         $thirtyDaysAgo = now()->subDays(30);
@@ -198,7 +206,11 @@ class AnalyticsController extends Controller
         $recentBotLogs = PageVisit::where('is_bot', true)
             ->orderByDesc('created_at')
             ->limit(25)
-            ->get(['id', 'bot_name', 'url', 'ip_address', 'country_name', 'created_at']);
+            ->get(['id', 'bot_name', 'url', 'ip_address', 'country_name', 'created_at'])
+            ->map(function ($log) use ($aiBotNames) {
+                $log->is_ai = in_array($log->bot_name, $aiBotNames);
+                return $log;
+            });
 
         // Organic Search Referrers
         $searchReferrers = PageVisit::where('is_bot', false)
@@ -208,6 +220,9 @@ class AnalyticsController extends Controller
                     ->orWhere('referrer_domain', 'like', '%duckduckgo%')
                     ->orWhere('referrer_domain', 'like', '%yahoo%')
                     ->orWhere('referrer_domain', 'like', '%ecosia%')
+                    ->orWhere('referrer_domain', 'like', '%perplexity%')
+                    ->orWhere('referrer_domain', 'like', '%openai%')
+                    ->orWhere('referrer_domain', 'like', '%chatgpt%')
                     ->orWhere('referrer_domain', 'like', '%yandex%');
             })
             ->select('referrer_domain', DB::raw('count(*) as count'))
@@ -229,6 +244,7 @@ class AnalyticsController extends Controller
         return Inertia::render('admin/analytics/seo', [
             'metrics' => [
                 'totalBotCrawls' => $totalBotCrawls,
+                'totalAiCrawls' => $totalAiCrawls,
                 'totalPosts' => $totalPosts,
                 'goodSeo' => $goodSeoCount,
                 'okSeo' => $okSeoCount,

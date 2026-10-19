@@ -31,11 +31,21 @@ class SitemapController extends Controller
     public function robots(): Response
     {
         $appUrl = config('app.url', url('/'));
-        $content = "User-agent: *\n";
+        $content = "# Standard Search Engine Directives\n";
+        $content .= "User-agent: *\n";
         $content .= "Allow: /\n";
         $content .= "Disallow: /admin\n";
         $content .= "Disallow: /dashboard\n";
         $content .= "Disallow: /settings\n\n";
+
+        $content .= "# Generative Engine Optimization (GEO) — Welcome AI Search & Knowledge Models\n";
+        $content .= "User-agent: GPTBot\nAllow: /\n\n";
+        $content .= "User-agent: OAI-SearchBot\nAllow: /\n\n";
+        $content .= "User-agent: PerplexityBot\nAllow: /\n\n";
+        $content .= "User-agent: ClaudeBot\nAllow: /\n\n";
+        $content .= "User-agent: Google-Extended\nAllow: /\n\n";
+        $content .= "User-agent: CCBot\nAllow: /\n\n";
+
         $content .= "Sitemap: {$appUrl}/sitemap.xml\n";
 
         return response($content, 200, [

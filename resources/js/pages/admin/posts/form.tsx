@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Bot,
     Check,
     CheckCircle2,
     Compass,
@@ -11,6 +12,7 @@ import {
     Layers,
     MapPin,
     Monitor,
+    Quote,
     Save,
     Search,
     Smartphone,
@@ -264,6 +266,82 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
         };
     }, [data.title, data.meta_title, data.meta_description, data.excerpt, data.focus_keyword, data.content]);
 
+    // Real-time Generative Engine Optimization (GEO) Audit for AI search engines (Perplexity, ChatGPT, Gemini)
+    const geoAudit = useMemo(() => {
+        const clean = data.content ? data.content.replace(/<[^>]*>/g, ' ') : '';
+        const words = clean.trim().split(/\s+/).filter(Boolean).length;
+        const excerptTrim = data.excerpt ? data.excerpt.trim() : '';
+
+        let score = 0;
+        const checks: { label: string; passed: boolean; detail: string }[] = [];
+
+        // 1. Direct Answer / Executive Summary
+        const hasDirectAnswer = excerptTrim.length >= 40;
+        if (hasDirectAnswer) score += 20;
+        checks.push({
+            label: 'Executive Direct Answer (TL;DR)',
+            passed: hasDirectAnswer,
+            detail: hasDirectAnswer
+                ? 'Concise thesis available for LLM synthesis'
+                : 'Write a 1-2 sentence direct answer in excerpt to boost AI citation',
+        });
+
+        // 2. Factual Numerical / Statistical Metrics
+        const numberMatches = (clean.match(/\b\d+(?:[\.,]\d+)?(?:\s*(?:km|m|%|meters|kilometers|hours|days|years|IDR|USD|\$))?\b/gi) || []).length;
+        const hasStats = numberMatches >= 3;
+        if (hasStats) score += 20;
+        checks.push({
+            label: 'Factual & Statistical Grounding',
+            passed: hasStats,
+            detail: hasStats
+                ? `${numberMatches} empirical data points found (high AI citation weight)`
+                : 'Include concrete numbers, elevations, distances, costs, or statistics',
+        });
+
+        // 3. Quotes & Field Eyewitness Citations
+        const hasQuotes = /["“][^"”]{15,}["”]/u.test(clean) || data.content.includes('<blockquote') || /\b(according to|stated by|witnessed|reported)\b/i.test(clean);
+        if (hasQuotes) score += 20;
+        checks.push({
+            label: 'Attributed Quotes & Sources',
+            passed: hasQuotes,
+            detail: hasQuotes
+                ? 'Quotes/sources detected to minimize AI hallucination'
+                : 'Add pull-quotes or eyewitness accounts to enhance authority',
+        });
+
+        // 4. Conversational Question-Oriented Headings
+        const hasQuestionHeadings = /(?:^|\n)#{2,4}\s*(?:How|What|Why|Where|When|Who|Best|Guide|\?)/im.test(data.content)
+            || /<h[2-4][^>]*>(?:How|What|Why|Where|When|Who|Best|Guide|[^<]*\?)/i.test(data.content);
+        if (hasQuestionHeadings) score += 20;
+        checks.push({
+            label: 'Conversational Prompt Alignment',
+            passed: hasQuestionHeadings,
+            detail: hasQuestionHeadings
+                ? 'Headings match natural user questions in AI chats'
+                : 'Formulate an H2/H3 as a question (e.g. "How to reach...", "What to pack...")',
+        });
+
+        // 5. Structured Entity Lists & Key Takeaways
+        const hasLists = data.content.includes('<ul') || data.content.includes('<ol')
+            || /(?:^|\n)\s*[-*•\d+\.]\s+/m.test(data.content);
+        if (hasLists) score += 20;
+        checks.push({
+            label: 'Structured Lists / Key Points',
+            passed: hasLists,
+            detail: hasLists
+                ? 'Structured bullet points ready for AI answer cards'
+                : 'Use bulleted lists for key checkpoints, tips, or itineraries',
+        });
+
+        const finalScore = Math.min(100, Math.max(10, score));
+        return {
+            score: finalScore,
+            status: finalScore >= 80 ? 'AI Citation Ready' : finalScore >= 50 ? 'Moderate GEO' : 'Needs GEO Work',
+            checks,
+            simulatedSummary: excerptTrim || clean.slice(0, 240) + '...',
+        };
+    }, [data.title, data.excerpt, data.content]);
+
     // Handle Quick Geo Preset selection
     function applyGeoPreset(preset: GeoPreset) {
         setData((prev) => ({
@@ -318,16 +396,31 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                     <div className="flex items-center gap-3">
                         {/* Instant SEO Score Badge */}
                         <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5 shadow-sm">
-                            <span className="text-xs font-medium text-muted-foreground">SEO Health:</span>
+                            <span className="text-xs font-medium text-muted-foreground">SEO:</span>
                             <span
                                 className={`text-xs font-bold px-1.5 py-0.5 rounded ${seoAudit.score >= 80
-                                        ? 'bg-emerald-500/10 text-emerald-600'
-                                        : seoAudit.score >= 55
-                                            ? 'bg-amber-500/10 text-amber-600'
-                                            : 'bg-red-500/10 text-red-600'
+                                    ? 'bg-emerald-500/10 text-emerald-600'
+                                    : seoAudit.score >= 55
+                                        ? 'bg-amber-500/10 text-amber-600'
+                                        : 'bg-red-500/10 text-red-600'
                                     }`}
                             >
                                 {seoAudit.score}/100
+                            </span>
+                        </div>
+
+                        {/* Instant GEO Score Badge (Generative Engine Optimization) */}
+                        <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5 shadow-sm">
+                            <span className="text-xs font-medium text-muted-foreground">GEO AI:</span>
+                            <span
+                                className={`text-xs font-bold px-1.5 py-0.5 rounded ${geoAudit.score >= 80
+                                    ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                    : geoAudit.score >= 50
+                                        ? 'bg-amber-500/10 text-amber-600'
+                                        : 'bg-red-500/10 text-red-600'
+                                    }`}
+                            >
+                                {geoAudit.score}/100
                             </span>
                         </div>
 
@@ -351,7 +444,7 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
 
                 {/* Main 3-Tab Workspace: Article Body, SEO Optimizer, GEO Optimizer */}
                 <Tabs defaultValue="content" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 max-w-md mb-6">
+                    <TabsList className="grid w-full grid-cols-3 max-w-lg mb-6">
                         <TabsTrigger value="content" className="flex items-center gap-2">
                             <Layers className="h-4 w-4" />
                             <span>Article Body</span>
@@ -368,11 +461,15 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                             </Badge>
                         </TabsTrigger>
                         <TabsTrigger value="geo" className="flex items-center gap-2">
-                            <Globe className="h-4 w-4" />
-                            <span>GEO Optimizer</span>
-                            <span className="text-[10px] font-mono uppercase bg-muted px-1 rounded ml-1">
-                                {data.geo_target_country}
-                            </span>
+                            <Sparkles className="h-4 w-4 text-purple-500" />
+                            <span>GEO (Generative AI)</span>
+                            <Badge
+                                variant="secondary"
+                                className={`text-[10px] ml-1 px-1 py-0 ${geoAudit.score >= 80 ? 'text-purple-600 bg-purple-500/10' : 'text-amber-600'
+                                    }`}
+                            >
+                                {geoAudit.score}
+                            </Badge>
                         </TabsTrigger>
                     </TabsList>
 
@@ -710,8 +807,8 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                     SEO Meta Title
                                                 </Label>
                                                 <span className={`text-[11px] font-mono ${data.meta_title.length >= 30 && data.meta_title.length <= 65
-                                                        ? 'text-emerald-600'
-                                                        : 'text-amber-600'
+                                                    ? 'text-emerald-600'
+                                                    : 'text-amber-600'
                                                     }`}>
                                                     {data.meta_title.length}/65 chars
                                                 </span>
@@ -727,8 +824,8 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                             <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full transition-all ${data.meta_title.length >= 30 && data.meta_title.length <= 65
-                                                            ? 'bg-emerald-500'
-                                                            : 'bg-amber-500'
+                                                        ? 'bg-emerald-500'
+                                                        : 'bg-amber-500'
                                                         }`}
                                                     style={{ width: `${Math.min(100, (data.meta_title.length / 65) * 100)}%` }}
                                                 />
@@ -741,8 +838,8 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                     SEO Meta Description
                                                 </Label>
                                                 <span className={`text-[11px] font-mono ${data.meta_description.length >= 110 && data.meta_description.length <= 165
-                                                        ? 'text-emerald-600'
-                                                        : 'text-amber-600'
+                                                    ? 'text-emerald-600'
+                                                    : 'text-amber-600'
                                                     }`}>
                                                     {data.meta_description.length}/160 chars
                                                 </span>
@@ -758,8 +855,8 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                             <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full transition-all ${data.meta_description.length >= 110 && data.meta_description.length <= 165
-                                                            ? 'bg-emerald-500'
-                                                            : 'bg-amber-500'
+                                                        ? 'bg-emerald-500'
+                                                        : 'bg-amber-500'
                                                         }`}
                                                     style={{ width: `${Math.min(100, (data.meta_description.length / 160) * 100)}%` }}
                                                 />
@@ -844,23 +941,101 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                         </div>
                     </TabsContent>
 
-                    {/* TAB 3: GEO OPTIMIZER */}
+                    {/* TAB 3: GEO OPTIMIZER (Generative Engine Optimization for ChatGPT, Perplexity, Gemini) */}
                     <TabsContent value="geo" className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Left 2 Cols: Geographic Targeting Settings */}
+                            {/* Left 2 Cols: AI Search Simulation & Executive Summary */}
                             <div className="lg:col-span-2 space-y-6">
-                                {/* Quick Country Presets Bar */}
+                                {/* AI Generative Search Citation Simulator */}
+                                <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/[0.02] to-amber-500/[0.02]">
+                                    <CardHeader className="flex flex-row items-center justify-between pb-3">
+                                        <div>
+                                            <CardTitle className="text-base font-semibold flex items-center gap-2">
+                                                <span>Generative AI Answer &amp; Citation Simulator</span>
+                                            </CardTitle>
+                                            <CardDescription>
+                                                How generative engines (Perplexity AI, ChatGPT Search, Google Gemini) synthesize and cite your dispatch
+                                            </CardDescription>
+                                        </div>
+                                        <Badge variant="outline" className="font-mono text-[10px] text-purple-600 border-purple-500/30">
+                                            GEO v2.0
+                                        </Badge>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        {/* Mock Perplexity / ChatGPT Answer Card */}
+                                        <div className="rounded-xl border border-purple-500/25 bg-white dark:bg-zinc-950 p-5 shadow-sm space-y-3.5">
+                                            {/* Simulated Prompt Bar */}
+                                            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pb-2.5 border-b">
+                                                <Bot className="h-3.5 w-3.5 text-purple-600" />
+                                                <span className="font-semibold text-foreground">AI Query:</span>
+                                                <span className="truncate">&quot;What are the authentic insights and route guides for {data.title || 'this travel destination'}?&quot;</span>
+                                            </div>
+
+                                            {/* AI Synthesized Answer */}
+                                            <div className="space-y-2 text-xs sm:text-sm text-foreground/90 leading-relaxed font-sans">
+                                                <p>
+                                                    {geoAudit.simulatedSummary}
+                                                    <span className="inline-flex items-center ml-1.5 px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-semibold border border-purple-500/20 cursor-pointer hover:underline">
+                                                        [1] Kelana Club
+                                                    </span>
+                                                </p>
+                                            </div>
+
+                                            {/* Citation Source Pill (like Perplexity / ChatGPT Search) */}
+                                            <div className="pt-2 border-t flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-muted-foreground font-mono text-[10px]">CITED SOURCES:</span>
+                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border bg-muted/40 font-mono text-[11px] text-foreground">
+                                                        <span className="font-bold text-purple-600">[1]</span>
+                                                        <span className="font-semibold">{data.title || 'The Kelana Club'}</span>
+                                                        <span className="text-muted-foreground">• kelanaclub.com</span>
+                                                    </div>
+                                                </div>
+                                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                                                    <CheckCircle2 className="h-3 w-3" /> Factual Citation Match
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* AI Executive Direct Answer Editor */}
+                                        <div className="space-y-2 pt-2">
+                                            <div className="flex items-center justify-between">
+                                                <Label htmlFor="geo_excerpt" className="text-xs font-semibold flex items-center gap-1.5">
+                                                    <Quote className="h-3.5 w-3.5 text-purple-600" />
+                                                    <span>Executive Direct Answer / Lead Thesis</span>
+                                                </Label>
+                                                <span className={`text-[11px] font-mono ${data.excerpt.length >= 40 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                    {data.excerpt.length} chars (aim for 40-180 chars)
+                                                </span>
+                                            </div>
+                                            <Textarea
+                                                id="geo_excerpt"
+                                                value={data.excerpt}
+                                                onChange={(e) => setData('excerpt', e.target.value)}
+                                                placeholder="Write a clear, fact-based 1-2 sentence direct answer that AI engines can extract as authoritative ground truth..."
+                                                rows={3}
+                                                className="text-xs font-sans leading-relaxed"
+                                            />
+                                            <p className="text-[11px] text-muted-foreground">
+                                                💡 <strong>GEO Tip:</strong> AI generative engines (Perplexity, ChatGPT, Gemini) prioritize direct factual claims without conversational filler in the first 60 words.
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Regional Geotagging & Coordinates (Preserved & Integrated) */}
                                 <Card>
                                     <CardHeader className="pb-3">
                                         <CardTitle className="text-sm font-semibold flex items-center gap-2">
                                             <MapPin className="h-4 w-4 text-amber-500" />
-                                            Quick Regional Presets
+                                            <span>Geographic Localization &amp; Regional Presets</span>
                                         </CardTitle>
                                         <CardDescription>
-                                            Click any preset to automatically configure target country, coordinates, and hreflang codes
+                                            Ground truth coordinates and regional hreflang targeting for geo-specific AI retrieval
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent>
+                                    <CardContent className="space-y-4">
+                                        {/* Presets Bar */}
                                         <div className="flex flex-wrap gap-2">
                                             {geoPresets.map((preset) => (
                                                 <Button
@@ -876,15 +1051,8 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                 </Button>
                                             ))}
                                         </div>
-                                    </CardContent>
-                                </Card>
 
-                                <Card>
-                                    <CardHeader className="pb-3">
-                                        <CardTitle className="text-sm font-semibold">Geographic Coordinates & Targeting</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
                                             <div className="space-y-1.5">
                                                 <Label htmlFor="geo_target_country" className="text-xs">
                                                     Target Country (ISO-3166-1 alpha-2)
@@ -906,7 +1074,7 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                     id="geo_region"
                                                     value={data.geo_region}
                                                     onChange={(e) => setData('geo_region', e.target.value)}
-                                                    placeholder="e.g. ID-JK, US-NY"
+                                                    placeholder="e.g. ID-NB, ID-JK, US-NY"
                                                     className="font-mono text-xs"
                                                 />
                                             </div>
@@ -919,7 +1087,7 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                     id="geo_placename"
                                                     value={data.geo_placename}
                                                     onChange={(e) => setData('geo_placename', e.target.value)}
-                                                    placeholder="e.g. Jakarta, Kyoto, New York"
+                                                    placeholder="e.g. Lombok, Bali, Jakarta"
                                                     className="text-xs"
                                                 />
                                             </div>
@@ -945,7 +1113,7 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                     id="geo_latitude"
                                                     value={data.geo_latitude || ''}
                                                     onChange={(e) => setData('geo_latitude', e.target.value)}
-                                                    placeholder="-6.2088"
+                                                    placeholder="-8.6500"
                                                     className="font-mono text-xs"
                                                 />
                                             </div>
@@ -958,7 +1126,7 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                     id="geo_longitude"
                                                     value={data.geo_longitude || ''}
                                                     onChange={(e) => setData('geo_longitude', e.target.value)}
-                                                    placeholder="106.8456"
+                                                    placeholder="116.3249"
                                                     className="font-mono text-xs"
                                                 />
                                             </div>
@@ -967,52 +1135,71 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                 </Card>
                             </div>
 
-                            {/* Right Col: Live Generated GEO Meta Tags Preview */}
+                            {/* Right Col: Live GEO Audit & AI Schema Preview */}
                             <div className="space-y-6">
+                                {/* Real-time GEO Audit Card */}
                                 <Card>
                                     <CardHeader className="pb-3">
-                                        <CardTitle className="text-sm font-semibold">Generated GEO Meta Tags</CardTitle>
+                                        <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                                            <span className="flex items-center gap-1.5">
+                                                <span>GEO AI Audit Checklist</span>
+                                            </span>
+                                            <Badge
+                                                className={
+                                                    geoAudit.score >= 80
+                                                        ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                                        : geoAudit.score >= 50
+                                                            ? 'bg-amber-500/10 text-amber-600'
+                                                            : 'bg-red-500/10 text-red-600'
+                                                }
+                                            >
+                                                {geoAudit.status} ({geoAudit.score}/100)
+                                            </Badge>
+                                        </CardTitle>
                                         <CardDescription>
-                                            Injected automatically into the HTML &lt;head&gt; for geo-location search engines
+                                            Evaluates factual citation readiness for Perplexity, ChatGPT &amp; Gemini
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        {geoAudit.checks.map((c, i) => (
+                                            <div
+                                                key={i}
+                                                className="flex items-start gap-2.5 p-2 rounded-lg border bg-muted/20 text-xs"
+                                            >
+                                                {c.passed ? (
+                                                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                                                ) : (
+                                                    <XCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                                                )}
+                                                <div className="space-y-0.5 min-w-0">
+                                                    <div className="font-medium text-foreground">{c.label}</div>
+                                                    <div className="text-muted-foreground text-[11px]">{c.detail}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+
+                                {/* AI Schema.org JSON-LD Specification Preview */}
+                                <Card>
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                            <Bot className="h-4 w-4 text-purple-600" />
+                                            <span>AI Model Structured Entities</span>
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Injected Schema.org metadata for LLM grounding
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="rounded-lg bg-zinc-950 p-3 text-[11px] font-mono text-zinc-300 space-y-1.5 overflow-x-auto border border-zinc-800">
-                                            <p className="text-zinc-500">// Geotagging Meta Specifications</p>
-                                            <p>
-                                                &lt;<span className="text-blue-400">meta</span>{' '}
-                                                <span className="text-amber-400">name</span>="geo.region"{' '}
-                                                <span className="text-amber-400">content</span>="
-                                                <span className="text-emerald-400">{data.geo_region || 'N/A'}</span>" /&gt;
-                                            </p>
-                                            <p>
-                                                &lt;<span className="text-blue-400">meta</span>{' '}
-                                                <span className="text-amber-400">name</span>="geo.placename"{' '}
-                                                <span className="text-amber-400">content</span>="
-                                                <span className="text-emerald-400">{data.geo_placename || 'N/A'}</span>" /&gt;
-                                            </p>
-                                            <p>
-                                                &lt;<span className="text-blue-400">meta</span>{' '}
-                                                <span className="text-amber-400">name</span>="geo.position"{' '}
-                                                <span className="text-amber-400">content</span>="
-                                                <span className="text-emerald-400">
-                                                    {data.geo_latitude};{data.geo_longitude}
-                                                </span>" /&gt;
-                                            </p>
-                                            <p>
-                                                &lt;<span className="text-blue-400">meta</span>{' '}
-                                                <span className="text-amber-400">name</span>="ICBM"{' '}
-                                                <span className="text-amber-400">content</span>="
-                                                <span className="text-emerald-400">
-                                                    {data.geo_latitude}, {data.geo_longitude}
-                                                </span>" /&gt;
-                                            </p>
-                                            <p>
-                                                &lt;<span className="text-blue-400">link</span>{' '}
-                                                <span className="text-amber-400">rel</span>="alternate"{' '}
-                                                <span className="text-amber-400">hreflang</span>="
-                                                <span className="text-emerald-400">{data.geo_hreflang_code}</span>" /&gt;
-                                            </p>
+                                            <p className="text-zinc-500">// GEO AI Schema.org Model</p>
+                                            <p><span className="text-blue-400">@type</span>: <span className="text-emerald-400">&quot;Article&quot;</span></p>
+                                            <p><span className="text-blue-400">abstract</span>: <span className="text-amber-300">&quot;{data.excerpt ? (data.excerpt.slice(0, 45) + '...') : 'Direct answer...'}&quot;</span></p>
+                                            <p><span className="text-blue-400">speakable</span>: <span className="text-emerald-400">[&quot;.geo-ai-summary&quot;, &quot;h1&quot;]</span></p>
+                                            <p><span className="text-blue-400">geo.placename</span>: <span className="text-emerald-400">&quot;{data.geo_placename || 'Lombok'}&quot;</span></p>
+                                            <p><span className="text-blue-400">geo.country</span>: <span className="text-emerald-400">&quot;{data.geo_target_country || 'ID'}&quot;</span></p>
+                                            <p><span className="text-blue-400">isAccessibleForFree</span>: <span className="text-purple-400">true</span></p>
                                         </div>
                                     </CardContent>
                                 </Card>

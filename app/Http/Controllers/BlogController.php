@@ -142,6 +142,7 @@ class BlogController extends Controller
 
         $articleSchema = $this->seoService->generateArticleSchema($post);
         $breadcrumbSchema = $this->seoService->generateBreadcrumbsSchema($post);
+        $geoAiSchema = $this->seoService->generateGeoAiSchema($post);
         $visitorGeo = $this->geoService->resolve($request);
 
         return Inertia::render('blog/show', [
@@ -149,6 +150,7 @@ class BlogController extends Controller
             'relatedPosts' => $relatedPosts,
             'articleSchema' => $articleSchema,
             'breadcrumbSchema' => $breadcrumbSchema,
+            'geoAiSchema' => $geoAiSchema,
             'visitorGeo' => $visitorGeo,
             'hcaptchaSiteKey' => config('services.hcaptcha.sitekey', '10000000-ffff-ffff-ffff-000000000001'),
         ]);

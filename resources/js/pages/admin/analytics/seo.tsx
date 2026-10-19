@@ -34,6 +34,7 @@ import {
 
 interface MetricData {
     totalBotCrawls: number;
+    totalAiCrawls: number;
     totalPosts: number;
     goodSeo: number;
     okSeo: number;
@@ -43,6 +44,7 @@ interface MetricData {
 interface BotItem {
     bot_name: string;
     count: number;
+    is_ai?: boolean;
 }
 
 interface BotTimeline {
@@ -57,6 +59,7 @@ interface BotLog {
     ip_address: string;
     country_name: string;
     created_at: string;
+    is_ai?: boolean;
 }
 
 interface SearchReferrer {
@@ -102,16 +105,21 @@ export default function SeoAnalytics({
                 { title: 'SEO & Crawlers', href: '/admin/analytics/seo' },
             ]}
         >
-            <Head title="SEO Intelligence & Search Bot Crawlers — The Kelana Club" />
+            <Head title="SEO & GEO Intelligence — Search Bots & AI Crawlers" />
 
             <div className="flex flex-1 flex-col gap-6 p-6">
                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                            SEO Analytics & Search Engine Crawler Engine
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            Monitor search engine indexing bots, schema accuracy, organic search referrals, and sitewide SEO scores.
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                                SEO & GEO Intelligence
+                            </h1>
+                            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                                Generative Engine Optimization
+                            </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                            Monitor traditional search engine spiders, Generative AI indexing crawlers (ChatGPT, Perplexity, Claude), organic referrals, and post SEO health.
                         </p>
                     </div>
 
@@ -125,28 +133,41 @@ export default function SeoAnalytics({
                         <Button variant="outline" size="sm" asChild>
                             <a href="/robots.txt" target="_blank" rel="noopener noreferrer">
                                 <FileText className="mr-2 h-4 w-4" />
-                                View robots.txt
+                                View robots.txt (AI Rules)
                             </a>
                         </Button>
                     </div>
                 </div>
 
-                {/* 4 Cards */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* 5 Cards */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Verified Bot Crawls</CardTitle>
+                            <CardTitle className="text-sm font-medium">All Bot Crawls</CardTitle>
                             <Bot className="h-4 w-4 text-blue-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{metrics.totalBotCrawls.toLocaleString()}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Googlebot, Bingbot & spiders</p>
+                            <p className="text-xs text-muted-foreground mt-1">Googlebot, Bing & spiders</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-primary/30 bg-primary/[0.02]">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium">GEO AI Crawlers</CardTitle>
+                            <Sparkles className="h-4 w-4 text-primary" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-primary">
+                                {(metrics.totalAiCrawls || 0).toLocaleString()}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">GPTBot, Perplexity, Claude</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Good SEO Score (&gt;80)</CardTitle>
+                            <CardTitle className="text-sm font-medium">Good SEO (&gt;80)</CardTitle>
                             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                         </CardHeader>
                         <CardContent>
@@ -166,7 +187,7 @@ export default function SeoAnalytics({
                             <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                                 {metrics.okSeo} articles
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">Minor keyword adjustments recommended</p>
+                            <p className="text-xs text-muted-foreground mt-1">Minor adjustments needed</p>
                         </CardContent>
                     </Card>
 
@@ -179,7 +200,7 @@ export default function SeoAnalytics({
                             <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                                 {metrics.poorSeo} articles
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">Missing meta description or focus keywords</p>
+                            <p className="text-xs text-muted-foreground mt-1">Missing meta description</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -322,8 +343,17 @@ export default function SeoAnalytics({
                                         <tr key={log.id} className="hover:bg-muted/30">
                                             <td className="py-2.5 px-4 font-semibold text-foreground">
                                                 <div className="flex items-center gap-1.5">
-                                                    <Bot className="h-3.5 w-3.5 text-blue-500" />
-                                                    {log.bot_name}
+                                                    {log.is_ai ? (
+                                                        <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                                                    ) : (
+                                                        <Bot className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                                                    )}
+                                                    <span>{log.bot_name}</span>
+                                                    {log.is_ai && (
+                                                        <Badge variant="outline" className="text-[10px] py-0 px-1.5 border-primary/40 text-primary">
+                                                            GEO AI
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="py-2.5 px-4 font-mono truncate max-w-[260px]">
