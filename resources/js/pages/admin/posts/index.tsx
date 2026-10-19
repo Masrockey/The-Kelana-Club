@@ -40,6 +40,7 @@ interface PostItem {
     is_featured: boolean;
     views_count: number;
     seo_score: number;
+    geo_score?: number;
     geo_target_country: string;
     read_time_minutes: number;
     published_at: string | null;
@@ -174,6 +175,7 @@ export default function PostsIndex({ posts, categories, filters }: Props) {
                                         <th className="py-3 px-4">Category</th>
                                         <th className="py-3 px-4">Status</th>
                                         <th className="py-3 px-4">SEO Health</th>
+                                        <th className="py-3 px-4">GEO Health</th>
                                         <th className="py-3 px-4">GEO Target</th>
                                         <th className="py-3 px-4 text-right">Impressions</th>
                                         <th className="py-3 px-4 text-right">Actions</th>
@@ -182,7 +184,7 @@ export default function PostsIndex({ posts, categories, filters }: Props) {
                                 <tbody className="divide-y divide-border">
                                     {posts.data.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                                            <td colSpan={8} className="py-8 text-center text-muted-foreground">
                                                 No dispatches found matching your search.
                                             </td>
                                         </tr>
@@ -196,7 +198,7 @@ export default function PostsIndex({ posts, categories, filters }: Props) {
                                                                 src={post.featured_image}
                                                                 alt=""
                                                                 className="h-10 w-14 rounded object-cover shrink-0 border"
-                                                            />
+                             />
                                                         ) : (
                                                             <div className="h-10 w-14 rounded bg-muted flex items-center justify-center shrink-0 text-muted-foreground text-xs">
                                                                 No Img
@@ -257,6 +259,23 @@ export default function PostsIndex({ posts, categories, filters }: Props) {
                                                             }`}
                                                         />
                                                         <span className="font-semibold text-xs">{post.seo_score}/100</span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="py-3 px-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            className={`h-2.5 w-2.5 rounded-full ${
+                                                                (post.geo_score ?? 70) >= 80
+                                                                    ? 'bg-purple-500'
+                                                                    : (post.geo_score ?? 70) >= 50
+                                                                    ? 'bg-amber-500'
+                                                                    : 'bg-red-500'
+                                                            }`}
+                                                        />
+                                                        <span className="font-semibold text-xs text-purple-600 dark:text-purple-400">
+                                                            {post.geo_score ?? 70}/100
+                                                        </span>
                                                     </div>
                                                 </td>
 

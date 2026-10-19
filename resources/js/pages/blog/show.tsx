@@ -349,8 +349,7 @@ export default function BlogShow({
                 {post.excerpt && (
                     <div className="geo-ai-summary ai-direct-answer rounded-xl border border-amber-600/20 bg-amber-500/5 p-4 sm:p-5 space-y-2.5">
                         <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-400">
-                            <Sparkles className="h-4 w-4" />
-                            <span className="uppercase tracking-wider font-mono text-[11px]">Field Intelligence &amp; Direct Takeaway (GEO)</span>
+                            <span className="uppercase tracking-wider font-mono text-[11px]">Field Intelligence</span>
                         </div>
                         <p className="font-serif italic text-sm leading-relaxed text-[#58413f] dark:text-[#d6c7b2]">
                             {post.excerpt}
@@ -471,13 +470,12 @@ export default function BlogShow({
                             return (
                                 <div
                                     key={idx}
-                                    className={`my-6 rounded-xl border p-5 text-sm not-prose ${
-                                        isWarning
+                                    className={`my-6 rounded-xl border p-5 text-sm not-prose ${isWarning
                                             ? 'border-amber-500/40 bg-amber-500/5 text-amber-950 dark:text-amber-100'
                                             : isTip
-                                            ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-950 dark:text-emerald-100'
-                                            : 'border-sky-500/40 bg-sky-500/5 text-sky-950 dark:text-sky-100'
-                                    }`}
+                                                ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-950 dark:text-emerald-100'
+                                                : 'border-sky-500/40 bg-sky-500/5 text-sky-950 dark:text-sky-100'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-2 font-bold mb-1.5 text-xs font-mono uppercase tracking-wider">
                                         {isWarning ? (

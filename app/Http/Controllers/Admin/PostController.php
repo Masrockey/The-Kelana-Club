@@ -131,7 +131,7 @@ class PostController extends Controller
             $validated['published_at'] = now();
         }
 
-        // Evaluate SEO Score
+        // Evaluate SEO & GEO AI Scores
         $seoAnalysis = $this->seoService->analyze(
             $validated['title'],
             $validated['content'],
@@ -141,13 +141,21 @@ class PostController extends Controller
         );
         $validated['seo_score'] = $seoAnalysis['score'];
 
+        $geoAnalysis = $this->seoService->analyzeGeo(
+            $validated['title'],
+            $validated['content'],
+            $validated['excerpt'] ?? null,
+            $validated['focus_keyword'] ?? null
+        );
+        $validated['geo_score'] = $geoAnalysis['score'];
+
         $post = Post::create($validated);
 
         if (! empty($validated['tag_ids'])) {
             $post->tags()->sync($validated['tag_ids']);
         }
 
-        return redirect()->route('admin.posts.index')->with('success', "Post '{$post->title}' created successfully with SEO score: {$post->seo_score}/100.");
+        return redirect()->route('admin.posts.index')->with('success', "Post '{$post->title}' created successfully (SEO: {$post->seo_score}/100, GEO AI: {$post->geo_score}/100).");
     }
 
     /**
@@ -224,7 +232,7 @@ class PostController extends Controller
             $validated['published_at'] = now();
         }
 
-        // Evaluate SEO Score
+        // Evaluate SEO & GEO AI Scores
         $seoAnalysis = $this->seoService->analyze(
             $validated['title'],
             $validated['content'],
@@ -234,13 +242,21 @@ class PostController extends Controller
         );
         $validated['seo_score'] = $seoAnalysis['score'];
 
+        $geoAnalysis = $this->seoService->analyzeGeo(
+            $validated['title'],
+            $validated['content'],
+            $validated['excerpt'] ?? null,
+            $validated['focus_keyword'] ?? null
+        );
+        $validated['geo_score'] = $geoAnalysis['score'];
+
         $post->update($validated);
 
         if (isset($validated['tag_ids'])) {
             $post->tags()->sync($validated['tag_ids']);
         }
 
-        return redirect()->route('admin.posts.index')->with('success', "Post '{$post->title}' updated successfully. SEO score: {$post->seo_score}/100.");
+        return redirect()->route('admin.posts.index')->with('success', "Post '{$post->title}' updated successfully (SEO: {$post->seo_score}/100, GEO AI: {$post->geo_score}/100).");
     }
 
     /**

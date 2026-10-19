@@ -33,12 +33,20 @@ class Post extends Model
         'og_image',
         'schema_type',
         'seo_score',
+        'geo_score',
         'geo_target_country',
         'geo_region',
         'geo_placename',
         'geo_latitude',
         'geo_longitude',
         'geo_hreflang_code',
+    ];
+
+    /**
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'geo_score',
     ];
 
     /**
@@ -52,9 +60,45 @@ class Post extends Model
             'read_time_minutes' => 'integer',
             'views_count' => 'integer',
             'seo_score' => 'integer',
+            'geo_score' => 'integer',
             'geo_latitude' => 'float',
             'geo_longitude' => 'float',
         ];
+    }
+
+    /**
+     * Compute dynamic Generative Engine Optimization (GEO) score.
+     */
+    public function getGeoScoreAttribute(): int
+    {
+        if (isset($this->attributes['geo_score']) && $this->attributes['geo_score'] !== null) {
+            return (int) $this->attributes['geo_score'];
+        }
+
+        $cleanContent = strip_tags((string) $this->content);
+        $score = 0;
+
+        if (! empty(trim((string) $this->excerpt)) && strlen(trim((string) $this->excerpt)) >= 50) {
+            $score += 20;
+        }
+
+        if (preg_match_all('/\b\d+(?:[\.,]\d+)?(?:\s*(?:km|m|%|meters|kilometers|hours|days|years|IDR|USD|\$))?\b/i', $cleanContent) >= 3) {
+            $score += 20;
+        }
+
+        if (preg_match('/["“][^"”]{15,}["”]/u', $cleanContent) || str_contains($this->content ?? '', '<blockquote') || preg_match('/\b(according to|stated by|witnessed|reported)\b/i', $cleanContent)) {
+            $score += 20;
+        }
+
+        if (preg_match('/(?:^|\n)#{2,4}\s*(?:How|What|Why|Where|When|Who|Best|Guide|\?)/im', (string) $this->content) || preg_match('/<h[2-4][^>]*>(?:How|What|Why|Where|When|Who|Best|Guide|[^<]*\?)/i', (string) $this->content)) {
+            $score += 20;
+        }
+
+        if (str_contains($this->content ?? '', '<ul') || str_contains($this->content ?? '', '<ol') || preg_match('/(?:^|\n)\s*[-*•\d+\.]\s+/m', (string) $this->content)) {
+            $score += 20;
+        }
+
+        return min(100, max(20, $score));
     }
 
     /**
