@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\SitemapController;
@@ -40,6 +41,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/analytics/visitors', [AnalyticsController::class, 'visitors'])->name('analytics.visitors');
         Route::get('/analytics/geo', [AnalyticsController::class, 'geo'])->name('analytics.geo');
         Route::get('/analytics/seo', [AnalyticsController::class, 'seo'])->name('analytics.seo');
+
+        // Media Library (Upload file, import from URL, browse)
+        Route::get('/media', [MediaController::class, 'index'])->name('media.index');
+        Route::get('/media/items', [MediaController::class, 'items'])->name('media.items');
+        Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
+        Route::post('/media/import-url', [MediaController::class, 'importFromUrl'])->name('media.import-url');
+        Route::put('/media/{media}', [MediaController::class, 'update'])->name('media.update');
+        Route::delete('/media/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
     });
 });
 

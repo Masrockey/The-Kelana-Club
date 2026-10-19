@@ -39,6 +39,8 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import GutenbergEditor from '@/components/gutenberg-editor';
+import MediaLibraryModal from '@/components/media-library-modal';
 
 interface CategoryItem {
     id: number;
@@ -129,6 +131,15 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
 
     const [serpDevice, setSerpDevice] = useState<'desktop' | 'mobile'>('desktop');
     const [previewContent, setPreviewContent] = useState(false);
+    const [featuredMediaModalOpen, setFeaturedMediaModalOpen] = useState(false);
+
+    function handleFeaturedMediaSelect(media: { url: string; alt_text?: string; caption?: string; name?: string }) {
+        setData((prev) => ({
+            ...prev,
+            featured_image: media.url,
+            og_image: prev.og_image || media.url,
+        }));
+    }
 
     // Auto-generate slug when title changes (if new post or slug empty)
     function handleTitleChange(val: string) {
@@ -272,7 +283,7 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                 {isEdit ? `Editing: ${post.title}` : 'Compose New Journal Dispatch'}
                             </h1>
                             <p className="text-xs text-muted-foreground">
-                                Powered by WordPress-grade SEO & GEO Optimization Engines
+                                Powered by The Kelana Club SEO & GEO Optimization Engines
                             </p>
                         </div>
                     </div>
@@ -282,13 +293,12 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                         <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5 shadow-sm">
                             <span className="text-xs font-medium text-muted-foreground">SEO Health:</span>
                             <span
-                                className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                                    seoAudit.score >= 80
+                                className={`text-xs font-bold px-1.5 py-0.5 rounded ${seoAudit.score >= 80
                                         ? 'bg-emerald-500/10 text-emerald-600'
                                         : seoAudit.score >= 55
-                                        ? 'bg-amber-500/10 text-amber-600'
-                                        : 'bg-red-500/10 text-red-600'
-                                }`}
+                                            ? 'bg-amber-500/10 text-amber-600'
+                                            : 'bg-red-500/10 text-red-600'
+                                    }`}
                             >
                                 {seoAudit.score}/100
                             </span>
@@ -324,9 +334,8 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                             <span>SEO Optimizer</span>
                             <Badge
                                 variant="secondary"
-                                className={`text-[10px] ml-1 px-1 py-0 ${
-                                    seoAudit.score >= 80 ? 'text-emerald-600' : 'text-amber-600'
-                                }`}
+                                className={`text-[10px] ml-1 px-1 py-0 ${seoAudit.score >= 80 ? 'text-emerald-600' : 'text-amber-600'
+                                    }`}
                             >
                                 {seoAudit.score}
                             </Badge>
@@ -389,47 +398,23 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                             />
                                         </div>
 
-                                        {/* Content Editor with Formatting Toolbar */}
+                                        {/* WordPress-Grade Gutenberg Block Editor */}
                                         <div className="space-y-2 pt-2">
                                             <div className="flex items-center justify-between">
-                                                <Label htmlFor="content" className="text-sm font-medium">
-                                                    Full Essay / Markdown Content <span className="text-red-500">*</span>
+                                                <Label htmlFor="content" className="text-sm font-medium flex items-center gap-2">
+                                                    <span>Article Body</span>
                                                 </Label>
-                                                <div className="flex items-center gap-2">
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => setPreviewContent(!previewContent)}
-                                                        className="text-xs h-7"
-                                                    >
-                                                        <Eye className="mr-1 h-3.5 w-3.5" />
-                                                        {previewContent ? 'Edit Mode' : 'Preview Mode'}
-                                                    </Button>
-                                                </div>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Estimated Read Time: ~{Math.max(1, Math.ceil(seoAudit.wordCount / 200))} min
+                                                </span>
                                             </div>
 
-                                            {previewContent ? (
-                                                <div className="min-h-[400px] w-full rounded-md border p-4 bg-muted/20 prose dark:prose-invert max-w-none text-sm">
-                                                    <div className="whitespace-pre-line leading-relaxed">
-                                                        {data.content || 'Nothing written yet...'}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <Textarea
-                                                    id="content"
-                                                    value={data.content}
-                                                    onChange={(e) => setData('content', e.target.value)}
-                                                    placeholder="Write your article in rich markdown or text. Use ## for H2 subheadings, > for pull-quotes..."
-                                                    className="min-h-[420px] font-mono text-sm leading-relaxed"
-                                                    required
-                                                />
-                                            )}
+                                            <GutenbergEditor
+                                                value={data.content}
+                                                onChange={(val) => setData('content', val)}
+                                                placeholder="Start writing or press '/' to insert a block (Heading, Photography, Route, Quote)..."
+                                            />
                                             {errors.content && <p className="text-xs text-red-500">{errors.content}</p>}
-                                            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                                                <span>Estimated Read Time: ~{Math.max(1, Math.ceil(seoAudit.wordCount / 200))} min</span>
-                                                <span>Word count: {seoAudit.wordCount} words</span>
-                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -439,33 +424,82 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                             <div className="space-y-6">
                                 {/* Featured Image */}
                                 <Card>
-                                    <CardHeader className="pb-3">
+                                    <CardHeader className="pb-3 flex flex-row items-center justify-between">
                                         <CardTitle className="text-sm font-medium flex items-center gap-1.5">
                                             <Image className="h-4 w-4" />
                                             Featured Image
                                         </CardTitle>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setFeaturedMediaModalOpen(true)}
+                                            className="h-7 text-xs text-[#C2410C] hover:text-[#9A3412]"
+                                        >
+                                            Media Library
+                                        </Button>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
-                                        <Input
-                                            value={data.featured_image}
-                                            onChange={(e) => setData('featured_image', e.target.value)}
-                                            placeholder="https://images.unsplash.com/photo-..."
-                                            className="text-xs"
-                                        />
                                         {data.featured_image ? (
-                                            <div className="relative aspect-video rounded-lg overflow-hidden border">
-                                                <img
-                                                    src={data.featured_image}
-                                                    alt="Preview"
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        (e.target as HTMLElement).style.display = 'none';
-                                                    }}
+                                            <div className="space-y-2">
+                                                <div className="relative aspect-video rounded-lg overflow-hidden border group/feat">
+                                                    <img
+                                                        src={data.featured_image}
+                                                        alt="Featured preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/feat:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="secondary"
+                                                            onClick={() => setFeaturedMediaModalOpen(true)}
+                                                            className="h-7 text-xs"
+                                                        >
+                                                            Replace
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            onClick={() => setData('featured_image', '')}
+                                                            className="h-7 text-xs"
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <Input
+                                                    value={data.featured_image}
+                                                    onChange={(e) => setData('featured_image', e.target.value)}
+                                                    placeholder="Image URL..."
+                                                    className="text-xs font-mono"
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="aspect-video rounded-lg border border-dashed flex flex-col items-center justify-center text-xs text-muted-foreground p-4 text-center bg-muted/20">
-                                                <span>Enter an image URL above to preview the article banner</span>
+                                            <div className="aspect-video rounded-xl border-2 border-dashed border-[#E7E5E4] dark:border-[#262422] flex flex-col items-center justify-center text-xs text-muted-foreground p-4 text-center bg-muted/10 space-y-2">
+                                                <div className="p-2.5 rounded-full bg-muted text-[#C2410C]">
+                                                    <Image className="h-5 w-5" />
+                                                </div>
+                                                <span className="font-semibold text-foreground text-xs">
+                                                    No featured banner set
+                                                </span>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    onClick={() => setFeaturedMediaModalOpen(true)}
+                                                    className="h-8 text-xs bg-[#1C1917] hover:bg-[#292524] text-white dark:bg-white dark:text-[#1C1917]"
+                                                >
+                                                    Choose from Media Library
+                                                </Button>
+                                                <div className="pt-1 w-full">
+                                                    <Input
+                                                        value={data.featured_image}
+                                                        onChange={(e) => setData('featured_image', e.target.value)}
+                                                        placeholder="Or paste image URL here..."
+                                                        className="text-[11px] h-7 font-mono text-center"
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                     </CardContent>
@@ -574,9 +608,8 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                     <CardContent className="pt-2">
                                         {/* Mock Google Result Card */}
                                         <div
-                                            className={`rounded-xl border bg-white dark:bg-zinc-900 p-4 transition-all shadow-sm ${
-                                                serpDevice === 'mobile' ? 'max-w-sm mx-auto' : 'w-full'
-                                            }`}
+                                            className={`rounded-xl border bg-white dark:bg-zinc-900 p-4 transition-all shadow-sm ${serpDevice === 'mobile' ? 'max-w-sm mx-auto' : 'w-full'
+                                                }`}
                                         >
                                             <div className="flex items-center gap-2 mb-1.5 text-xs text-zinc-600 dark:text-zinc-400">
                                                 <div className="h-5 w-5 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-serif text-[10px] font-bold">
@@ -633,11 +666,10 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                 <Label htmlFor="meta_title" className="text-xs font-semibold">
                                                     SEO Meta Title
                                                 </Label>
-                                                <span className={`text-[11px] font-mono ${
-                                                    data.meta_title.length >= 30 && data.meta_title.length <= 65
+                                                <span className={`text-[11px] font-mono ${data.meta_title.length >= 30 && data.meta_title.length <= 65
                                                         ? 'text-emerald-600'
                                                         : 'text-amber-600'
-                                                }`}>
+                                                    }`}>
                                                     {data.meta_title.length}/65 chars
                                                 </span>
                                             </div>
@@ -651,11 +683,10 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                             {/* Progress bar */}
                                             <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full transition-all ${
-                                                        data.meta_title.length >= 30 && data.meta_title.length <= 65
+                                                    className={`h-full transition-all ${data.meta_title.length >= 30 && data.meta_title.length <= 65
                                                             ? 'bg-emerald-500'
                                                             : 'bg-amber-500'
-                                                    }`}
+                                                        }`}
                                                     style={{ width: `${Math.min(100, (data.meta_title.length / 65) * 100)}%` }}
                                                 />
                                             </div>
@@ -666,11 +697,10 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                 <Label htmlFor="meta_description" className="text-xs font-semibold">
                                                     SEO Meta Description
                                                 </Label>
-                                                <span className={`text-[11px] font-mono ${
-                                                    data.meta_description.length >= 110 && data.meta_description.length <= 165
+                                                <span className={`text-[11px] font-mono ${data.meta_description.length >= 110 && data.meta_description.length <= 165
                                                         ? 'text-emerald-600'
                                                         : 'text-amber-600'
-                                                }`}>
+                                                    }`}>
                                                     {data.meta_description.length}/160 chars
                                                 </span>
                                             </div>
@@ -684,11 +714,10 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                             {/* Progress bar */}
                                             <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full transition-all ${
-                                                        data.meta_description.length >= 110 && data.meta_description.length <= 165
+                                                    className={`h-full transition-all ${data.meta_description.length >= 110 && data.meta_description.length <= 165
                                                             ? 'bg-emerald-500'
                                                             : 'bg-amber-500'
-                                                    }`}
+                                                        }`}
                                                     style={{ width: `${Math.min(100, (data.meta_description.length / 160) * 100)}%` }}
                                                 />
                                             </div>
@@ -738,8 +767,8 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                     seoAudit.score >= 80
                                                         ? 'bg-emerald-500/10 text-emerald-600'
                                                         : seoAudit.score >= 55
-                                                        ? 'bg-amber-500/10 text-amber-600'
-                                                        : 'bg-red-500/10 text-red-600'
+                                                            ? 'bg-amber-500/10 text-amber-600'
+                                                            : 'bg-red-500/10 text-red-600'
                                                 }
                                             >
                                                 {seoAudit.status} ({seoAudit.score}/100)
@@ -949,6 +978,15 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                     </TabsContent>
                 </Tabs>
             </form>
+
+            {/* Featured Image Media Library Picker Modal */}
+            <MediaLibraryModal
+                open={featuredMediaModalOpen}
+                onOpenChange={setFeaturedMediaModalOpen}
+                onSelect={handleFeaturedMediaSelect}
+                title="Select Featured Article Banner"
+                selectButtonText="Set as Featured Image"
+            />
         </AppLayout>
     );
 }

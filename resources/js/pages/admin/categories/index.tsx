@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import ConfirmDialog from '@/components/confirm-dialog';
 
 interface CategoryItem {
     id: number;
@@ -30,6 +31,8 @@ interface Props {
 
 export default function CategoriesIndex({ categories }: Props) {
     const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<CategoryItem | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const { data, setData, post, put, delete: destroy, reset, processing, errors } = useForm({
         name: '',
@@ -69,10 +72,16 @@ export default function CategoriesIndex({ categories }: Props) {
         reset();
     }
 
-    function handleDelete(id: number, name: string) {
-        if (confirm(`Delete category "${name}"?`)) {
-            destroy(`/admin/categories/${id}`);
-        }
+    function confirmDelete() {
+        if (!deleteTarget) return;
+        setDeleting(true);
+        destroy(`/admin/categories/${deleteTarget.id}`, {
+            preserveScroll: true,
+            onFinish: () => {
+                setDeleting(false);
+                setDeleteTarget(null);
+            },
+        });
     }
 
     return (
@@ -243,7 +252,7 @@ export default function CategoriesIndex({ categories }: Props) {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-7 w-7 text-red-600 hover:text-red-700"
-                                                                onClick={() => handleDelete(c.id, c.name)}
+                                                                onClick={() => setDeleteTarget(c)}
                                                             >
                                                                 <Trash2 className="h-3.5 w-3.5" />
                                                             </Button>
@@ -259,6 +268,29 @@ export default function CategoriesIndex({ categories }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Confirm Delete Modal */}
+            <ConfirmDialog
+                open={!!deleteTarget}
+                onOpenChange={(open) => !open && setDeleteTarget(null)}
+                title="Delete Editorial Category?"
+                description={
+                    deleteTarget ? (
+                        <div className="space-y-2">
+                            <p>
+                                Are you sure you want to delete category{' '}
+                                <strong className="text-foreground font-semibold">"{deleteTarget.name}"</strong>?
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Articles linked to this category will become uncategorized.
+                            </p>
+                        </div>
+                    ) : null
+                }
+                confirmText="Delete Category"
+                loading={deleting}
+                onConfirm={confirmDelete}
+            />
         </AppLayout>
     );
 }

@@ -16,6 +16,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useState } from 'react';
+import ConfirmDialog from '@/components/confirm-dialog';
 
 interface CommentItem {
     id: number;
@@ -42,6 +44,9 @@ interface Props {
 }
 
 export default function CommentsIndex({ comments, currentStatus }: Props) {
+    const [deleteTarget, setDeleteTarget] = useState<CommentItem | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
     function filterStatus(status: string | null) {
         router.get('/admin/comments', { status: status || undefined }, { preserveState: true });
     }
@@ -50,10 +55,16 @@ export default function CommentsIndex({ comments, currentStatus }: Props) {
         router.patch(`/admin/comments/${id}/status`, { status });
     }
 
-    function handleDelete(id: number) {
-        if (confirm('Delete this comment permanently?')) {
-            router.delete(`/admin/comments/${id}`);
-        }
+    function confirmDelete() {
+        if (!deleteTarget) return;
+        setDeleting(true);
+        router.delete(`/admin/comments/${deleteTarget.id}`, {
+            preserveScroll: true,
+            onFinish: () => {
+                setDeleting(false);
+                setDeleteTarget(null);
+            },
+        });
     }
 
     return (
@@ -202,7 +213,7 @@ export default function CommentsIndex({ comments, currentStatus }: Props) {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-7 w-7 text-red-600"
-                                                            onClick={() => handleDelete(c.id)}
+                                                            onClick={() => setDeleteTarget(c)}
                                                         >
                                                             <Trash2 className="h-3.5 w-3.5" />
                                                         </Button>
@@ -217,6 +228,29 @@ export default function CommentsIndex({ comments, currentStatus }: Props) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Confirm Delete Modal */}
+            <ConfirmDialog
+                open={!!deleteTarget}
+                onOpenChange={(open) => !open && setDeleteTarget(null)}
+                title="Delete Reader Comment?"
+                description={
+                    deleteTarget ? (
+                        <div className="space-y-2">
+                            <p>
+                                Are you sure you want to permanently delete comment from{' '}
+                                <strong className="text-foreground font-semibold">"{deleteTarget.author_name}"</strong>?
+                            </p>
+                            <p className="text-xs text-muted-foreground italic bg-muted/40 p-2 rounded border">
+                                "{deleteTarget.content.slice(0, 120)}..."
+                            </p>
+                        </div>
+                    ) : null
+                }
+                confirmText="Delete Comment"
+                loading={deleting}
+                onConfirm={confirmDelete}
+            />
         </AppLayout>
     );
 }

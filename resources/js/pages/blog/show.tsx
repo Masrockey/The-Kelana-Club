@@ -8,6 +8,8 @@ import {
     Compass,
     Copy,
     Heart,
+    Info,
+    AlertCircle,
     Linkedin,
     MapPin,
     MessageSquare,
@@ -328,53 +330,268 @@ export default function BlogShow({
                     </div>
                 )}
 
-                {/* Article Prose Body with Drop Cap Styling */}
+                {/* Article Prose Body with Gutenberg Blocks & Drop Cap Styling */}
                 <div className="pt-4 font-serif text-base sm:text-lg leading-[1.8] text-[#292524] dark:text-[#D6D3D1] space-y-6">
-                    {/* Render paragraphs cleanly */}
-                    {cleanContent.split('\n\n').map((block, idx) => {
+                    {cleanContent.split(/\n{2,}/).map((block, idx) => {
                         const trimmed = block.trim();
                         if (!trimmed) return null;
 
-                        // Check if H2
+                        // 1. ROUTE PASSPORT BLOCK: :::route ... :::
+                        if (trimmed.startsWith(':::route') && trimmed.includes(':::')) {
+                            const lines = trimmed
+                                .replace(/^:::route\s*/i, '')
+                                .replace(/:::$/, '')
+                                .split('\n')
+                                .map((l) => l.trim())
+                                .filter(Boolean);
+
+                            const routeData: Record<string, string> = {};
+                            lines.forEach((l) => {
+                                const [k, ...v] = l.split(':');
+                                if (k && v.length) routeData[k.trim().toLowerCase()] = v.join(':').trim();
+                            });
+
+                            return (
+                                <aside
+                                    key={idx}
+                                    className="my-8 rounded-xl border border-[#C2410C]/30 bg-[#FAF7F2] dark:bg-[#181716] p-6 shadow-sm not-prose"
+                                >
+                                    <div className="flex items-center gap-2.5 pb-4 border-b border-[#E7E5E4] dark:border-[#262422]">
+                                        <div className="p-2 rounded-lg bg-[#C2410C]/10 text-[#C2410C]">
+                                            <Compass className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <span className="font-mono text-[10px] uppercase tracking-wider text-[#C2410C] font-semibold block">
+                                                Overland Route Waypoint
+                                            </span>
+                                            <h4 className="font-serif text-lg font-bold text-[#1C1917] dark:text-white leading-tight">
+                                                {routeData.route || routeData.name || 'Expedition Route Log'}
+                                            </h4>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-b border-[#E7E5E4] dark:border-[#262422] text-xs">
+                                        {routeData.distance && (
+                                            <div>
+                                                <span className="font-mono text-[10px] uppercase text-[#78716C] dark:text-[#A8A29E] block">
+                                                    Distance
+                                                </span>
+                                                <span className="font-semibold text-sm text-[#1C1917] dark:text-white font-mono">
+                                                    {routeData.distance}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {routeData.elevation && (
+                                            <div>
+                                                <span className="font-mono text-[10px] uppercase text-[#78716C] dark:text-[#A8A29E] block">
+                                                    Max Elevation
+                                                </span>
+                                                <span className="font-semibold text-sm text-[#1C1917] dark:text-white font-mono">
+                                                    {routeData.elevation}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {routeData.terrain && (
+                                            <div>
+                                                <span className="font-mono text-[10px] uppercase text-[#78716C] dark:text-[#A8A29E] block">
+                                                    Surface Terrain
+                                                </span>
+                                                <span className="font-semibold text-xs text-[#1C1917] dark:text-white">
+                                                    {routeData.terrain}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {routeData.season && (
+                                            <div>
+                                                <span className="font-mono text-[10px] uppercase text-[#78716C] dark:text-[#A8A29E] block">
+                                                    Best Season
+                                                </span>
+                                                <span className="font-semibold text-xs text-[#1C1917] dark:text-white">
+                                                    {routeData.season}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {routeData.highlights && (
+                                        <div className="pt-3 text-xs">
+                                            <span className="font-mono text-[10px] uppercase text-[#78716C] dark:text-[#A8A29E] block mb-0.5">
+                                                Key Waypoints & Field Stops:
+                                            </span>
+                                            <p className="font-serif italic text-sm text-[#44403C] dark:text-[#D6D3D1]">
+                                                {routeData.highlights}
+                                            </p>
+                                        </div>
+                                    )}
+                                </aside>
+                            );
+                        }
+
+                        // 2. CALLOUT / FIELD NOTE: :::callout[type]{title="..."} ... :::
+                        if (trimmed.startsWith(':::callout') && trimmed.includes(':::')) {
+                            const headerMatch = trimmed.match(/^:::callout(?:\[(info|tip|warning)\])?(?:\s*\{title="([^"]*)"\})?/i);
+                            const calloutType = headerMatch?.[1]?.toLowerCase() || 'info';
+                            const title = headerMatch?.[2] || (calloutType === 'warning' ? 'Travel Advisory' : 'Field Note');
+                            const body = trimmed
+                                .replace(/^:::callout[^\n]*\n?/, '')
+                                .replace(/:::\s*$/, '')
+                                .trim();
+
+                            const isWarning = calloutType === 'warning';
+                            const isTip = calloutType === 'tip';
+
+                            return (
+                                <div
+                                    key={idx}
+                                    className={`my-6 rounded-xl border p-5 text-sm not-prose ${
+                                        isWarning
+                                            ? 'border-amber-500/40 bg-amber-500/5 text-amber-950 dark:text-amber-100'
+                                            : isTip
+                                            ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-950 dark:text-emerald-100'
+                                            : 'border-sky-500/40 bg-sky-500/5 text-sky-950 dark:text-sky-100'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2 font-bold mb-1.5 text-xs font-mono uppercase tracking-wider">
+                                        {isWarning ? (
+                                            <AlertCircle className="h-4 w-4 text-amber-600" />
+                                        ) : isTip ? (
+                                            <Compass className="h-4 w-4 text-emerald-600" />
+                                        ) : (
+                                            <Info className="h-4 w-4 text-sky-600" />
+                                        )}
+                                        <span>{title}</span>
+                                    </div>
+                                    <p className="font-serif text-sm leading-relaxed">{body}</p>
+                                </div>
+                            );
+                        }
+
+                        // 3. SEPARATOR: ---
+                        if (/^(?:---|___|\*\*\*)$/.test(trimmed)) {
+                            return (
+                                <div key={idx} className="my-10 flex items-center justify-center gap-3">
+                                    <div className="h-px bg-[#E7E5E4] dark:bg-[#262422] flex-1 max-w-xs" />
+                                    <span className="font-serif text-xs text-[#C2410C]">✦</span>
+                                    <div className="h-px bg-[#E7E5E4] dark:bg-[#262422] flex-1 max-w-xs" />
+                                </div>
+                            );
+                        }
+
+                        // 4. INLINE IMAGE: ![alt](url "caption") or ![alt](url)
+                        const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)$/s);
+                        if (imgMatch) {
+                            const alt = imgMatch[1];
+                            const url = imgMatch[2];
+                            const caption = imgMatch[3] || alt;
+                            return (
+                                <figure key={idx} className="my-8 rounded-xl overflow-hidden border border-[#E7E5E4] dark:border-[#262422] bg-[#FAF7F2] dark:bg-[#181716] not-prose">
+                                    <img
+                                        src={url}
+                                        alt={alt}
+                                        className="w-full max-h-[540px] object-cover"
+                                        loading="lazy"
+                                    />
+                                    {caption && (
+                                        <figcaption className="p-3 text-center font-serif italic text-xs text-[#78716C] dark:text-[#A8A29E] border-t border-[#E7E5E4] dark:border-[#262422]">
+                                            {caption}
+                                        </figcaption>
+                                    )}
+                                </figure>
+                            );
+                        }
+
+                        // 5. HEADINGS H2, H3, H4
                         if (trimmed.startsWith('## ')) {
                             return (
                                 <h2
                                     key={idx}
-                                    className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1917] dark:text-white pt-6 pb-2"
+                                    className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1917] dark:text-white pt-8 pb-2"
                                 >
                                     {trimmed.replace(/^##\s+/, '')}
                                 </h2>
                             );
                         }
-
-                        // Check if H3
                         if (trimmed.startsWith('### ')) {
                             return (
                                 <h3
                                     key={idx}
-                                    className="font-serif text-xl sm:text-2xl font-semibold tracking-tight text-[#1C1917] dark:text-white pt-4 pb-1"
+                                    className="font-serif text-xl sm:text-2xl font-semibold tracking-tight text-[#1C1917] dark:text-white pt-6 pb-1"
                                 >
                                     {trimmed.replace(/^###\s+/, '')}
                                 </h3>
                             );
                         }
+                        if (trimmed.startsWith('#### ')) {
+                            return (
+                                <h4
+                                    key={idx}
+                                    className="font-serif text-lg sm:text-xl font-semibold tracking-tight text-[#1C1917] dark:text-white pt-4 pb-1"
+                                >
+                                    {trimmed.replace(/^####\s+/, '')}
+                                </h4>
+                            );
+                        }
 
-                        // Check if blockquote
+                        // 6. BLOCKQUOTE
                         if (trimmed.startsWith('> ')) {
+                            const quoteLines = trimmed
+                                .split('\n')
+                                .map((l) => l.replace(/^>\s*/, '').trim())
+                                .filter(Boolean);
+
+                            let citation = '';
+                            const quoteBody: string[] = [];
+                            quoteLines.forEach((l) => {
+                                if (l.startsWith('— ') || l.startsWith('-- ')) {
+                                    citation = l.replace(/^[—-]\s*/, '').trim();
+                                } else {
+                                    quoteBody.push(l);
+                                }
+                            });
+
                             return (
                                 <blockquote
                                     key={idx}
-                                    className="border-l-4 border-[#C2410C] pl-6 my-6 italic font-serif text-lg text-[#57534E] dark:text-[#A8A29E] bg-[#FAF7F2] dark:bg-[#181716] p-4 rounded-r-lg"
+                                    className="border-l-4 border-[#C2410C] pl-6 my-8 italic font-serif text-lg text-[#57534E] dark:text-[#A8A29E] bg-[#FAF7F2] dark:bg-[#181716] p-5 rounded-r-xl"
                                 >
-                                    {trimmed.replace(/^>\s+/, '').replace(/^"/, '').replace(/"$/, '')}
+                                    <p className="leading-relaxed">&ldquo;{quoteBody.join(' ')}&rdquo;</p>
+                                    {citation && (
+                                        <cite className="block text-xs font-serif not-italic font-bold text-[#1C1917] dark:text-white mt-2">
+                                            — {citation}
+                                        </cite>
+                                    )}
                                 </blockquote>
                             );
                         }
 
-                        // First paragraph drop cap effect
+                        // 7. LISTS (Bullet / Numbered)
+                        const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
+                        if (lines.length > 0 && lines.every((l) => /^[-*+]\s/.test(l))) {
+                            return (
+                                <ul key={idx} className="my-6 space-y-2 pl-6 list-disc marker:text-[#C2410C] font-serif text-base">
+                                    {lines.map((item, itemIdx) => (
+                                        <li key={itemIdx}>{item.replace(/^[-*+]\s+/, '')}</li>
+                                    ))}
+                                </ul>
+                            );
+                        }
+                        if (lines.length > 0 && lines.every((l) => /^\d+\.\s/.test(l))) {
+                            return (
+                                <ol key={idx} className="my-6 space-y-2 pl-6 list-decimal marker:font-mono marker:text-xs marker:text-[#C2410C] font-serif text-base">
+                                    {lines.map((item, itemIdx) => (
+                                        <li key={itemIdx}>{item.replace(/^\d+\.\s+/, '')}</li>
+                                    ))}
+                                </ol>
+                            );
+                        }
+
+                        // 8. FIRST PARAGRAPH DROP CAP
                         if (idx === 0) {
                             return (
-                                <p key={idx} className="first-letter:font-serif first-letter:text-5xl first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:leading-none first-letter:text-[#C2410C]">
+                                <p
+                                    key={idx}
+                                    className="first-letter:font-serif first-letter:text-5xl first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:leading-none first-letter:text-[#C2410C]"
+                                >
                                     {trimmed}
                                 </p>
                             );

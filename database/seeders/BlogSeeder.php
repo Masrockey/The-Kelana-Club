@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Comment;
+use App\Models\MediaFile;
 use App\Models\PageVisit;
 use App\Models\Post;
 use App\Models\Tag;
@@ -422,6 +423,89 @@ Crafted by Bugis shipwrights using ironwood (*kayu besi*) and teak without bluep
                     ]);
                 }
             }
+        }
+
+        // 7. Seed Worldwide Travel Photographs into Media Library
+        $travelPhotos = [
+            [
+                'name' => 'Ha Giang Karst Limestone Towers',
+                'url' => 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1600&q=80',
+                'alt_text' => 'Ha Giang Northern Vietnam karst limestone mountains and misty canyon',
+                'caption' => 'Ma Pi Leng Pass canyon, Northern Vietnam. Elevation ~1,500m.',
+                'mime_type' => 'image/jpeg',
+                'size_bytes' => 1245000,
+                'source_type' => 'url',
+            ],
+            [
+                'name' => 'Pamir Highway Mountain Pass & Yurt',
+                'url' => 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1600&q=80',
+                'alt_text' => 'Pamir Highway Kyrgyzstan high altitude mountains and river valley',
+                'caption' => 'Ak-Baital Pass approach, Pamir Highway M41, Central Asia.',
+                'mime_type' => 'image/jpeg',
+                'size_bytes' => 1890000,
+                'source_type' => 'url',
+            ],
+            [
+                'name' => 'Toraja Highland Sacred Village',
+                'url' => 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1600&q=80',
+                'alt_text' => 'Traditional Toraja Tongkonan ancestral roof in South Sulawesi',
+                'caption' => 'Ancestral Tongkonan settlement in Kete Kesu, Tana Toraja.',
+                'mime_type' => 'image/jpeg',
+                'size_bytes' => 1520000,
+                'source_type' => 'url',
+            ],
+            [
+                'name' => 'Komodo Phinisi Schooner at Sunset',
+                'url' => 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=1600&q=80',
+                'alt_text' => 'Traditional Indonesian wooden phinisi sailing schooner at sunset in Flores',
+                'caption' => 'Liveaboard expedition crossing the Sape Strait, East Nusa Tenggara.',
+                'mime_type' => 'image/jpeg',
+                'size_bytes' => 1640000,
+                'source_type' => 'url',
+            ],
+            [
+                'name' => 'Patagonia Fitz Roy Glacier Peak',
+                'url' => 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80',
+                'alt_text' => 'Mount Fitz Roy granite towers with alpine lake in Argentine Patagonia',
+                'caption' => 'Laguna de los Tres dawn vantage point, El Chalten, Argentina.',
+                'mime_type' => 'image/jpeg',
+                'size_bytes' => 2100000,
+                'source_type' => 'url',
+            ],
+            [
+                'name' => 'Nakasendo Trail Japanese Wooden Post Town',
+                'url' => 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1600&q=80',
+                'alt_text' => 'Historical wooden shophouse lanterns along the Nakasendo trail in Japan',
+                'caption' => 'Evening lantern glow in Tsumago-juku, Kiso Valley, Japan.',
+                'mime_type' => 'image/jpeg',
+                'size_bytes' => 1780000,
+                'source_type' => 'url',
+            ],
+            [
+                'name' => 'Iceland Route 1 Glacier Lagoon',
+                'url' => 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1600&q=80',
+                'alt_text' => 'Glacial icebergs floating in blue lagoon along Iceland Ring Road',
+                'caption' => 'Jokulsarlon iceberg lagoon, South Coast Route 1, Iceland.',
+                'mime_type' => 'image/jpeg',
+                'size_bytes' => 1430000,
+                'source_type' => 'url',
+            ],
+            [
+                'name' => 'Karakoram Highway Mountain Road',
+                'url' => 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80',
+                'alt_text' => 'Carved mountain highway road between massive snowcapped peaks',
+                'caption' => 'Hunza valley segment along the high Karakoram highway.',
+                'mime_type' => 'image/jpeg',
+                'size_bytes' => 1950000,
+                'source_type' => 'url',
+            ],
+        ];
+
+        foreach ($travelPhotos as $photo) {
+            MediaFile::firstOrCreate(
+                ['url' => $photo['url']],
+                array_merge($photo, ['user_id' => $admin->id])
+            );
         }
     }
 }

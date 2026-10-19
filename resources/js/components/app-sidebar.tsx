@@ -5,6 +5,7 @@ import {
     FileText,
     FolderTree,
     Globe,
+    Image as ImageIcon,
     LayoutGrid,
     MessageSquare,
     PenSquare,
@@ -43,6 +44,11 @@ const contentNavItems: NavItem[] = [
         title: 'Write Post',
         href: '/admin/posts/create',
         icon: PenSquare,
+    },
+    {
+        title: 'Media Library',
+        href: '/admin/media',
+        icon: ImageIcon,
     },
     {
         title: 'Categories',

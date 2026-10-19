@@ -30,6 +30,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import ConfirmDialog from '@/components/confirm-dialog';
 
 interface PostItem {
     id: number;
@@ -75,6 +76,8 @@ interface Props {
 
 export default function PostsIndex({ posts, categories, filters }: Props) {
     const [searchTerm, setSearchTerm] = useState(filters.q || '');
+    const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     function handleSearch(e: React.FormEvent) {
         e.preventDefault();
@@ -85,10 +88,16 @@ export default function PostsIndex({ posts, categories, filters }: Props) {
         router.get('/admin/posts', { ...filters, status: status || undefined }, { preserveState: true });
     }
 
-    function handleDelete(id: number, title: string) {
-        if (confirm(`Are you sure you want to delete "${title}"?`)) {
-            router.delete(`/admin/posts/${id}`);
-        }
+    function confirmDelete() {
+        if (!deleteTarget) return;
+        setDeleting(true);
+        router.delete(`/admin/posts/${deleteTarget.id}`, {
+            preserveScroll: true,
+            onFinish: () => {
+                setDeleting(false);
+                setDeleteTarget(null);
+            },
+        });
     }
 
     return (
@@ -285,7 +294,7 @@ export default function PostsIndex({ posts, categories, filters }: Props) {
                                                             )}
                                                             <DropdownMenuSeparator />
                                                             <DropdownMenuItem
-                                                                onClick={() => handleDelete(post.id, post.title)}
+                                                                onClick={() => setDeleteTarget({ id: post.id, title: post.title })}
                                                                 className="text-red-600 focus:text-red-600"
                                                             >
                                                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -303,6 +312,29 @@ export default function PostsIndex({ posts, categories, filters }: Props) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Confirm Delete Modal */}
+            <ConfirmDialog
+                open={!!deleteTarget}
+                onOpenChange={(open) => !open && setDeleteTarget(null)}
+                title="Delete Dispatch Article?"
+                description={
+                    deleteTarget ? (
+                        <div className="space-y-2">
+                            <p>
+                                Are you sure you want to permanently delete{' '}
+                                <strong className="text-foreground font-semibold">"{deleteTarget.title}"</strong>?
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                This will remove the article, its visitor records, and associated commentary.
+                            </p>
+                        </div>
+                    ) : null
+                }
+                confirmText="Delete Article"
+                loading={deleting}
+                onConfirm={confirmDelete}
+            />
         </AppLayout>
     );
 }
