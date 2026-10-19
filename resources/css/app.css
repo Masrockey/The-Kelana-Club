@@ -8,8 +8,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+    --font-headline: 'Playfair Display', Georgia, serif;
+    --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Plus Jakarta Sans', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 

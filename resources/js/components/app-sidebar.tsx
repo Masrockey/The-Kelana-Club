@@ -7,6 +7,7 @@ import {
     Globe,
     Image as ImageIcon,
     LayoutGrid,
+    Menu as MenuIcon,
     MessageSquare,
     PenSquare,
     Search,
@@ -59,6 +60,11 @@ const contentNavItems: NavItem[] = [
         title: 'Comments',
         href: '/admin/comments',
         icon: MessageSquare,
+    },
+    {
+        title: 'Navigation Menus',
+        href: '/admin/menus',
+        icon: MenuIcon,
     },
 ];
 

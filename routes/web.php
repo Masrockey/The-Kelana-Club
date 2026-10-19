@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\SitemapController;
@@ -36,6 +37,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/comments', [CommentController::class, 'index'])->name('comments.index');
         Route::patch('/comments/{comment}/status', [CommentController::class, 'updateStatus'])->name('comments.status');
         Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
+        // Navigation Menu Editor (WordPress Style)
+        Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
+        Route::post('/menus/save', [MenuController::class, 'save'])->name('menus.save');
+        Route::post('/menus/reset', [MenuController::class, 'reset'])->name('menus.reset');
 
         // Analytics Suite (Visitor, GEO, SEO)
         Route::get('/analytics/visitors', [AnalyticsController::class, 'visitors'])->name('analytics.visitors');

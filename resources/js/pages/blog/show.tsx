@@ -18,7 +18,8 @@ import {
     Share2,
     Twitter,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,6 +79,7 @@ interface Props {
     articleSchema: any;
     breadcrumbSchema: any;
     visitorGeo: any;
+    hcaptchaSiteKey?: string;
 }
 
 export default function BlogShow({
@@ -86,10 +88,12 @@ export default function BlogShow({
     articleSchema,
     breadcrumbSchema,
     visitorGeo,
+    hcaptchaSiteKey,
 }: Props) {
     const [scrollProgress, setScrollProgress] = useState(0);
     const [copied, setCopied] = useState(false);
     const [replyToId, setReplyToId] = useState<number | null>(null);
+    const hcaptchaRef = useRef<HCaptcha | null>(null);
 
     // Reading scroll progress tracker
     useEffect(() => {
@@ -111,6 +115,7 @@ export default function BlogShow({
         author_website: '',
         content: '',
         parent_id: '' as string | number,
+        'h-captcha-response': '',
     });
 
     function handleCommentSubmit(e: React.FormEvent) {
@@ -119,6 +124,8 @@ export default function BlogShow({
             preserveScroll: true,
             onSuccess: () => {
                 reset();
+                hcaptchaRef.current?.resetCaptcha();
+                setData('h-captcha-response', '');
                 setReplyToId(null);
             },
         });
@@ -783,6 +790,19 @@ export default function BlogShow({
                                     required
                                 />
                                 {errors.content && <p className="text-red-500 text-[11px]">{errors.content}</p>}
+                            </div>
+
+                            {/* hCaptcha Verification */}
+                            <div className="pt-1">
+                                <HCaptcha
+                                    ref={hcaptchaRef}
+                                    sitekey={hcaptchaSiteKey || '10000000-ffff-ffff-ffff-000000000001'}
+                                    onVerify={(token) => setData('h-captcha-response', token)}
+                                    onExpire={() => setData('h-captcha-response', '')}
+                                />
+                                {errors['h-captcha-response'] && (
+                                    <p className="text-red-500 text-[11px] mt-1.5">{errors['h-captcha-response']}</p>
+                                )}
                             </div>
 
                             <Button type="submit" disabled={processing} size="sm" className="bg-[#1C1917] dark:bg-white text-white dark:text-[#1C1917] hover:bg-[#C2410C] dark:hover:bg-[#C2410C] dark:hover:text-white">

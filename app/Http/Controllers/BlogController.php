@@ -10,6 +10,8 @@ use App\Services\GeoService;
 use App\Services\SeoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -80,9 +82,16 @@ class BlogController extends Controller
 
         $visitorGeo = $this->geoService->resolve($request);
 
+        $popularPosts = Post::published()
+            ->with(['category', 'user:id,name'])
+            ->orderBy('views_count', 'desc')
+            ->take(5)
+            ->get();
+
         return Inertia::render('blog/index', [
             'featuredPost' => $featuredPost,
             'posts' => $posts,
+            'popularPosts' => $popularPosts,
             'categories' => $categories,
             'tags' => $tags,
             'filters' => [
@@ -141,6 +150,7 @@ class BlogController extends Controller
             'articleSchema' => $articleSchema,
             'breadcrumbSchema' => $breadcrumbSchema,
             'visitorGeo' => $visitorGeo,
+            'hcaptchaSiteKey' => config('services.hcaptcha.sitekey', '10000000-ffff-ffff-ffff-000000000001'),
         ]);
     }
 
@@ -213,7 +223,30 @@ class BlogController extends Controller
             'author_website' => 'nullable|url|max:200',
             'content' => 'required|string|min:3|max:2000',
             'parent_id' => 'nullable|exists:comments,id',
+            'h-captcha-response' => 'nullable|string',
         ]);
+
+        $hcaptchaSecret = config('services.hcaptcha.secret');
+        if ($hcaptchaSecret && ! app()->environment('testing')) {
+            $token = $request->input('h-captcha-response');
+            if (empty($token)) {
+                return back()->withErrors(['h-captcha-response' => 'Please complete the hCaptcha verification.']);
+            }
+
+            try {
+                $response = Http::asForm()->timeout(5)->post('https://api.hcaptcha.com/siteverify', [
+                    'secret' => $hcaptchaSecret,
+                    'response' => $token,
+                    'remoteip' => $request->ip(),
+                ]);
+
+                if (! $response->json('success')) {
+                    return back()->withErrors(['h-captcha-response' => 'hCaptcha verification failed. Please try again.']);
+                }
+            } catch (\Exception $e) {
+                Log::warning('hCaptcha verification error: '.$e->getMessage());
+            }
+        }
 
         $post->comments()->create([
             'parent_id' => $validated['parent_id'] ?? null,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,6 +42,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'headerMenuItems' => fn () => MenuItem::whereHas('menu', fn ($q) => $q->where('location', 'header'))
+                ->orderBy('order')
+                ->get(['id', 'title', 'url', 'target', 'type', 'order']),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

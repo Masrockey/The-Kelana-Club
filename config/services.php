@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'hcaptcha' => [
+        'sitekey' => env('HCAPTCHA_SITEKEY', '10000000-ffff-ffff-ffff-000000000001'),
+        'secret' => env('HCAPTCHA_SECRET', '0x0000000000000000000000000000000000000000'),
+    ],
+
 ];
