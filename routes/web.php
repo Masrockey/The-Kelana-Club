@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\TrendController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/analytics/visitors', [AnalyticsController::class, 'visitors'])->name('analytics.visitors');
         Route::get('/analytics/geo', [AnalyticsController::class, 'geo'])->name('analytics.geo');
         Route::get('/analytics/seo', [AnalyticsController::class, 'seo'])->name('analytics.seo');
+
+        // Google Trends Live Feed (Auto-cached & purged every 3 hours)
+        Route::get('/trends', [TrendController::class, 'index'])->name('trends.index');
+        Route::post('/trends/refresh', [TrendController::class, 'refresh'])->name('trends.refresh');
+        Route::post('/trends/purge', [TrendController::class, 'purge'])->name('trends.purge');
 
         // Media Library (Upload file, import from URL, browse)
         Route::get('/media', [MediaController::class, 'index'])->name('media.index');

@@ -63,14 +63,26 @@ class PostController extends Controller
     /**
      * Show the form for creating a new post.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $categories = Category::all();
         $tags = Tag::all();
         $geoPresets = GeoService::$geoPresets;
 
+        $prefill = null;
+        if ($request->filled('title') || $request->filled('focus_keyword')) {
+            $title = (string) $request->query('title', '');
+            $prefill = [
+                'title' => $title,
+                'slug' => Str::slug($title),
+                'focus_keyword' => (string) $request->query('focus_keyword', $title),
+                'meta_description' => (string) $request->query('meta_description', ''),
+                'excerpt' => (string) $request->query('excerpt', ''),
+            ];
+        }
+
         return Inertia::render('admin/posts/form', [
-            'post' => null,
+            'post' => $prefill,
             'categories' => $categories,
             'tags' => $tags,
             'geoPresets' => $geoPresets,

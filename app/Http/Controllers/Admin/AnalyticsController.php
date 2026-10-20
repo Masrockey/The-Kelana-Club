@@ -186,6 +186,7 @@ class AnalyticsController extends Controller
             ->get()
             ->map(function ($bot) use ($aiBotNames) {
                 $bot->is_ai = in_array($bot->bot_name, $aiBotNames);
+
                 return $bot;
             });
 
@@ -209,6 +210,7 @@ class AnalyticsController extends Controller
             ->get(['id', 'bot_name', 'url', 'ip_address', 'country_name', 'created_at'])
             ->map(function ($log) use ($aiBotNames) {
                 $log->is_ai = in_array($log->bot_name, $aiBotNames);
+
                 return $log;
             });
 

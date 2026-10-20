@@ -11,6 +11,7 @@ import {
     MessageSquare,
     PenSquare,
     Search,
+    TrendingUp,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -69,6 +70,11 @@ const contentNavItems: NavItem[] = [
 ];
 
 const analyticsNavItems: NavItem[] = [
+    {
+        title: 'Kelana Trends',
+        href: '/admin/trends',
+        icon: TrendingUp,
+    },
     {
         title: 'Traffic & Visitors',
         href: '/admin/analytics/visitors',
