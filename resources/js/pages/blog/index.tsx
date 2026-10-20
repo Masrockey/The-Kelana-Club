@@ -356,13 +356,16 @@ export default function BlogIndex({
                         <section className="mb-14">
                             <article className="bg-white dark:bg-[#211d1a] rounded-2xl overflow-hidden border border-[#dfbfbc]/30 dark:border-stone-800 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-                                    {/* Featured Image */}
-                                    <div className="lg:col-span-7 relative overflow-hidden aspect-[16/10] lg:aspect-auto min-h-[320px] lg:min-h-[440px]">
+                                    {/* Featured Image (16:9 - 1200x675) */}
+                                    <div className="lg:col-span-7 relative overflow-hidden aspect-video bg-[#1C1917]">
                                         <Link href={`/article/${featuredPost.slug}`} className="block w-full h-full group">
                                             <img
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                                 alt={featuredPost.title}
                                                 src={featuredPost.featured_image || FALLBACK_IMAGES[0]}
+                                                onError={(e) => {
+                                                    (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGES[0];
+                                                }}
                                             />
                                         </Link>
                                         <div className="absolute top-4 left-4 pointer-events-none">
@@ -496,12 +499,15 @@ export default function BlogIndex({
                                             className="bg-white dark:bg-[#211d1a] p-5 sm:p-6 rounded-xl border border-[#dfbfbc]/25 dark:border-stone-800 hover:border-[#7d1017]/40 hover:shadow-sm transition-all group"
                                         >
                                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
-                                                <div className="sm:col-span-4 rounded-lg overflow-hidden aspect-[4/3] bg-[#f3ede7] dark:bg-stone-800">
+                                                <div className="sm:col-span-4 rounded-lg overflow-hidden aspect-video bg-[#f3ede7] dark:bg-stone-800">
                                                     <Link href={`/article/${post.slug}`} className="block w-full h-full">
                                                         <img
                                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                             alt={post.title}
                                                             src={post.featured_image || FALLBACK_IMAGES[(index + 1) % FALLBACK_IMAGES.length]}
+                                                            onError={(e) => {
+                                                                (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGES[(index + 1) % FALLBACK_IMAGES.length];
+                                                            }}
                                                         />
                                                     </Link>
                                                 </div>

@@ -145,13 +145,16 @@ export default function BlogArchive({
                                 className="flex flex-col justify-between border border-[#E7E5E4] dark:border-[#262422] rounded-xl overflow-hidden bg-[#FAF7F2] dark:bg-[#181716] transition-all hover:shadow-md hover:border-[#C2410C]/40 group"
                             >
                                 <div>
-                                    <Link href={`/article/${post.slug}`} className="block aspect-[16/10] overflow-hidden bg-[#E7E5E4] dark:bg-[#262422]">
+                                    <Link href={`/article/${post.slug}`} className="block aspect-video overflow-hidden bg-[#1C1917]">
                                         {post.featured_image ? (
                                             <img
                                                 src={post.featured_image}
                                                 alt={post.title}
                                                 className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                                                 loading="lazy"
+                                                onError={(e) => {
+                                                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1600&q=80';
+                                                }}
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center font-serif italic text-muted-foreground text-xs">

@@ -335,13 +335,16 @@ export default function BlogShow({
                     </div>
                 </div>
 
-                {/* Featured Photography Banner */}
+                {/* Featured Photography Banner (16:9 - 1200x675) */}
                 {post.featured_image && (
-                    <div className="rounded-xl overflow-hidden border border-[#E7E5E4] dark:border-[#262422] aspect-[16/10] bg-[#E7E5E4] dark:bg-[#262422]">
+                    <div className="rounded-xl overflow-hidden border border-[#E7E5E4] dark:border-[#262422] aspect-video bg-[#1C1917] relative shadow-sm">
                         <img
                             src={post.featured_image}
                             alt={post.title}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1600&q=80';
+                            }}
                         />
                     </div>
                 )}

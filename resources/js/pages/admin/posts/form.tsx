@@ -593,6 +593,9 @@ export default function PostForm({ post, categories, tags, geoPresets }: Props) 
                                                         src={data.featured_image}
                                                         alt="Featured preview"
                                                         className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1600&q=80';
+                                                        }}
                                                     />
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/feat:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <Button

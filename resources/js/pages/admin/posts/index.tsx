@@ -198,7 +198,10 @@ export default function PostsIndex({ posts, categories, filters }: Props) {
                                                                 src={post.featured_image}
                                                                 alt=""
                                                                 className="h-10 w-14 rounded object-cover shrink-0 border"
-                             />
+                                                                onError={(e) => {
+                                                                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=400&q=80';
+                                                                }}
+                                                            />
                                                         ) : (
                                                             <div className="h-10 w-14 rounded bg-muted flex items-center justify-center shrink-0 text-muted-foreground text-xs">
                                                                 No Img

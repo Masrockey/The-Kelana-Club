@@ -396,6 +396,9 @@ export default function MediaLibraryModal({
                                                         alt={item.alt_text || item.name}
                                                         className="w-full h-full object-cover"
                                                         loading="lazy"
+                                                        onError={(e) => {
+                                                            (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=400&q=80';
+                                                        }}
                                                     />
 
                                                     {/* Selected Checkmark Badge */}
@@ -423,12 +426,15 @@ export default function MediaLibraryModal({
                                         Attachment Details
                                     </div>
 
-                                    {/* Thumbnail Preview */}
-                                    <div className="rounded-lg overflow-hidden border aspect-[16/10] bg-muted/40 relative">
+                                    {/* Thumbnail Preview (16:9 - 1200x675) */}
+                                    <div className="rounded-lg overflow-hidden border aspect-video bg-muted/40 relative">
                                         <img
                                             src={selectedMedia.url}
                                             alt={selectedMedia.alt_text || selectedMedia.name}
                                             className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80';
+                                            }}
                                         />
                                     </div>
 
